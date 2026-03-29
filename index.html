@@ -5,38 +5,46 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐰 도산 6-1 Happy >.<</title>
     
-    <!-- 라이브러리 로드 -->
+    <!-- 1. 필수 라이브러리 로드 (안정적인 버전 사용) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/lucide-react@latest"></script>
-    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
+    <!-- 2. 폰트 및 스타일 (선생님 원본 스타일 유지) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <style>
         body {
             margin: 0; padding: 0;
-            /* 선생님의 원본 배경 설정 적용 */
             background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
                         url('./bd.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             font-family: "Pretendard", sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .card-shadow { box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+        #root { width: 100%; display: flex; flex-direction: column; align-items: center; }
+        .tab-content { animation: fadeIn 0.3s ease-out; width: 100%; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+        <!-- 로딩 중 표시 (React가 켜지기 전까지 보임) -->
+        <div style="margin-top: 100px; font-weight: bold; color: #fbc02d; text-shadow: 1px 1px 2px white;">
+            앱을 불러오는 중입니다... 잠시만 기다려 주세요!
+        </div>
+    </div>
 
     <script type="text/babel">
+        // 라이브러리 안전하게 가져오기
         const { useState, useEffect, useRef } = React;
         const { Home, User, Users, ChevronLeft, ExternalLink } = LucideReact;
-        const { motion, AnimatePresence } = Motion;
 
         // [확인] 선생님의 구글 앱스 스크립트 API 주소를 꼭 넣어주세요!
         const API_URL = "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec";
@@ -71,7 +79,7 @@
                         setAllStudents(result.students || []);
                         setLessons(result.lessons || []);
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) { console.error("데이터 로드 실패", e); }
                 finally { setLoading(false); }
             };
 
@@ -115,92 +123,88 @@
             const me = allStudents.find(s => s.name === currentUser);
 
             return (
-                <div className="flex flex-col items-center min-h-screen">
-                    <div className="w-full max-w-[500px] text-center p-5 pb-[100px] animate-fade-in">
-                        <h1 className="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">
-                            🐰 도산 6-1 Happy &gt;.&lt;
-                        </h1>
+                <div className="w-full max-w-[500px] text-center p-5 pb-[100px] animate-fade-in">
+                    <h1 className="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">
+                        🐰 도산 6-1 Happy &gt;.&lt;
+                    </h1>
 
-                        <AnimatePresence mode="wait">
-                            {activeTab === 'home' && (
-                                <motion.div key="home" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                    <div className="font-bold mb-4">{updateDate()}</div>
-                                    <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
-                                        <p className="font-bold text-[#ff8f00]">🌈 지금 나의 기분은?</p>
-                                        <div className="flex justify-around mt-4">
-                                            {['🤩', '😊', '😐', '😢', '😡'].map((emoji, i) => (
-                                                <button key={i} className="text-4xl hover:scale-110 transition-transform" onClick={() => sendMood(emoji)}>{emoji}</button>
-                                            ))}
-                                        </div>
+                    <div className="tab-content">
+                        {activeTab === 'home' && (
+                            <div>
+                                <div className="font-bold mb-4">{updateDate()}</div>
+                                <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                                    <p className="font-bold text-[#ff8f00]">🌈 지금 나의 기분은?</p>
+                                    <div className="flex justify-around mt-4">
+                                        {['🤩', '😊', '😐', '😢', '😡'].map((emoji, i) => (
+                                            <button key={i} className="text-4xl hover:scale-110 transition-transform" onClick={() => sendMood(emoji)}>{emoji}</button>
+                                        ))}
                                     </div>
-                                    <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow text-left">
-                                        <h3 className="text-[#fbc02d] font-bold text-lg mb-2">📝 오늘의 학습 문제</h3>
-                                        {getTodayLesson() ? (
-                                            <>
-                                                <p className="text-gray-700 whitespace-pre-wrap">{getTodayLesson().content}</p>
-                                                {getTodayLesson().link && (
-                                                    <a href={getTodayLesson().link} target="_blank" className="inline-flex items-center gap-1 mt-3 text-[#ff8f00] font-bold hover:underline">
-                                                        <ExternalLink size={16} /> 학습 링크 바로가기
-                                                    </a>
-                                                )}
-                                            </>
-                                        ) : <p className="text-gray-500 italic">오늘은 등록된 학습 문제가 없습니다.</p>}
-                                    </div>
-                                </motion.div>
-                            )}
+                                </div>
+                                <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow text-left">
+                                    <h3 className="text-[#fbc02d] font-bold text-lg mb-2">📝 오늘의 학습 문제</h3>
+                                    {getTodayLesson() ? (
+                                        <>
+                                            <p className="text-gray-700 whitespace-pre-wrap">{getTodayLesson().content}</p>
+                                            {getTodayLesson().link && (
+                                                <a href={getTodayLesson().link} target="_blank" className="inline-flex items-center gap-1 mt-3 text-[#ff8f00] font-bold hover:underline">
+                                                    <ExternalLink size={16} /> 학습 링크 바로가기
+                                                </a>
+                                            )}
+                                        </>
+                                    ) : <p className="text-gray-500 italic">오늘은 등록된 학습 문제가 없습니다.</p>}
+                                </div>
+                            </div>
+                        )}
 
-                            {activeTab === 'myroom' && (
-                                <motion.div key="myroom" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                    <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
-                                        <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {me ? me.name : '나'}의 마이룸</h2>
-                                        <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
-                                            {me ? (
-                                                <>
-                                                    <p className="mb-2">⭐ <b>레벨:</b> LV.{me.lv}</p>
-                                                    <p className="mb-2">💰 <b>포인트:</b> {me.point}P</p>
-                                                    <p>🎮 <b>마크 좌표:</b> {me.mcCoords || '미정'}</p>
-                                                </>
-                                            ) : <p>데이터를 불러오는 중...</p>}
-                                        </div>
-                                        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={uploadFile} />
-                                        <button className="w-full p-4 rounded-xl bg-[#ffca28] text-white font-bold" onClick={() => fileInputRef.current.click()}>🎁 개인 과제 제출하기</button>
-                                    </div>
-                                </motion.div>
-                            )}
+                        {activeTab === 'myroom' && (
+                            <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                                <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {me ? me.name : '나'}의 마이룸</h2>
+                                <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
+                                    {me ? (
+                                        <>
+                                            <p className="mb-2">⭐ <b>레벨:</b> LV.{me.lv}</p>
+                                            <p className="mb-2">💰 <b>포인트:</b> {me.point}P</p>
+                                            <p>🎮 <b>마크 좌표:</b> {me.mcCoords || '미정'}</p>
+                                        </>
+                                    ) : <p>데이터를 불러오는 중...</p>}
+                                </div>
+                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={uploadFile} />
+                                <button className="w-full p-4 rounded-xl bg-[#ffca28] text-white font-bold" onClick={() => fileInputRef.current.click()}>🎁 개인 과제 제출하기</button>
+                            </div>
+                        )}
 
-                            {activeTab === 'explore' && (
-                                <motion.div key="explore" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-                                    {!selectedFriend ? (
-                                        <div className="grid grid-cols-2 gap-3">
-                                            {allStudents.filter(s => s.name !== currentUser).map((s, i) => (
-                                                <div key={i} className="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onClick={() => setSelectedFriend(s)}>
-                                                    <div className="text-2xl">🌳</div>
-                                                    <div className="font-bold mt-1">{s.name}</div>
-                                                    <div className="text-sm text-gray-400">LV.{s.lv}</div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    ) : (
-                                        <div className="bg-white/90 p-5 rounded-[25px] card-shadow">
-                                            <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {selectedFriend.name}의 공간</h2>
-                                            <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
-                                                <p className="mb-2">⭐ <b>레벨:</b> LV.{selectedFriend.lv}</p>
-                                                <p className="mb-2">💰 <b>포인트:</b> {selectedFriend.point}P</p>
-                                                <p>🎮 <b>마크 좌표:</b> {selectedFriend.mcCoords || '미정'}</p>
+                        {activeTab === 'explore' && (
+                            <div>
+                                {!selectedFriend ? (
+                                    <div className="grid grid-cols-2 gap-3">
+                                        {allStudents.filter(s => s.name !== currentUser).map((s, i) => (
+                                            <div key={i} className="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onClick={() => setSelectedFriend(s)}>
+                                                <div className="text-2xl">🌳</div>
+                                                <div className="font-bold mt-1">{s.name}</div>
+                                                <div className="text-sm text-gray-400">LV.{s.lv}</div>
                                             </div>
-                                            <button className="w-full p-4 rounded-xl bg-gray-200 text-gray-600 font-bold flex items-center justify-center gap-2" onClick={() => setSelectedFriend(null)}>
-                                                <ChevronLeft size={18} /> 뒤로 가기
-                                            </button>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="bg-white/90 p-5 rounded-[25px] card-shadow">
+                                        <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {selectedFriend.name}의 공간</h2>
+                                        <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
+                                            <p className="mb-2">⭐ <b>레벨:</b> LV.{selectedFriend.lv}</p>
+                                            <p className="mb-2">💰 <b>포인트:</b> {selectedFriend.point}P</p>
+                                            <p>🎮 <b>마크 좌표:</b> {selectedFriend.mcCoords || '미정'}</p>
                                         </div>
-                                    )}
-                                </motion.div>
-                            )}
-                        </AnimatePresence>
-
-                        <p className="text-[0.7rem] text-gray-500 mt-8 leading-relaxed px-4">
-                            본 플랫폼에 사용된 시각 자료는 스튜디오 지브리(Studio Ghibli)에서 공식적으로 허용한 '상식적인 범위 내의 교육적 활용' 가이드라인을 준수하며, 출처를 명확히 표기함.
-                        </p>
+                                        <button className="w-full p-4 rounded-xl bg-gray-200 text-gray-600 font-bold flex items-center justify-center gap-2" onClick={() => setSelectedFriend(null)}>
+                                            <ChevronLeft size={18} /> 뒤로 가기
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
+
+                    <p className="text-[0.7rem] text-gray-500 mt-8 leading-relaxed px-4">
+                        본 플랫폼에 사용된 시각 자료는 스튜디오 지브리(Studio Ghibli)에서 공식적으로 허용한 '상식적인 범위 내의 교육적 활용' 가이드라인을 준수하며, 출처를 명확히 표기함.
+                    </p>
 
                     <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
                         <button className={`flex-1 flex flex-col items-center gap-1 font-bold text-xs ${activeTab === 'home' ? 'text-[#fbc02d]' : 'text-gray-400'}`} onClick={() => {setActiveTab('home'); setSelectedFriend(null);}}>
