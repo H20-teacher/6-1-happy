@@ -15,40 +15,59 @@
         <div id="student-grid">로딩 중...</div>
     </div>
 
-    <script>
-        // 아까 메모한 GAS 배포 URL을 여기에 꼭 넣으세요!
-        const API_URL = "https://script.google.com/macros/s/AKfycbwLNJxDMLShsSXledULvzl7lQ8uK98yy70gMgR5wB1CZdnqMaePCPh91iGpWS_l8U0w/exec";
+   <script>
+    const API_URL = "https://script.google.com/macros/s/자신의_GAS_ID/exec";
+    let allStudents = []; // 전체 데이터를 담아둘 변수
 
-        // 페이지가 열리자마자 시트 데이터를 불러와서 6명을 화면에 띄웁니다.
-        window.onload = async function() {
-            try {
-                const response = await fetch(API_URL);
-                const students = await response.json();
-                
-                const grid = document.getElementById('student-grid');
-                grid.innerHTML = students.map(s => `
-                    <div class="student-card" onclick="enterMyRoom(${JSON.stringify(s)})">
-                        <h3>${s.name}</h3>
-                        <p>LV.${s.lv} | ${s.point}P</p>
-                    </div>
-                `).join('');
-            } catch (e) {
-                console.error("데이터 로드 실패!", e);
-            }
-        };
+    // 1. 초기 데이터 로드 (6명 리스트 출력)
+    async function loadData() {
+        const grid = document.getElementById('student-grid');
+        try {
+            const response = await fetch(API_URL);
+            const result = await response.json();
+            allStudents = result.students; 
 
-        function enterMyRoom(s) {
-            // 학생 개별 마이룸 화면으로 전환하는 로직
-            document.getElementById('app-content').innerHTML = `
-                <h2>🏠 ${s.name}의 Happy 룸</h2>
-                <div class="status-box">
-                    <p>✨ 레벨: ${s.lv}</p>
-                    <p>💰 포인트: ${s.point}P</p>
-                    <p>🎮 마크: ${s.mcCoords}</p>
+            grid.innerHTML = allStudents.map(s => `
+                <div class="student-card" onclick="enterMyRoom(${s.id})" 
+                     style="border: 2px solid #ffca28; padding: 20px; margin: 10px; border-radius: 20px; cursor: pointer; background: white; transition: 0.3s;">
+                    <h2 style="margin: 0; color: #ff8f00;">👦 ${s.name}</h2>
+                    <p style="color: #666; font-weight: bold;">LV.${s.lv} | ${s.point}P</p>
                 </div>
-                <button onclick="location.reload()">뒤로가기</button>
-            `;
+            `).join('');
+        } catch (e) {
+            grid.innerHTML = "❌ 연결 실패: " + e.message;
         }
-    </script>
-</body>
-</html>
+    }
+
+    // 2. 마이룸 입장 (화면 전환)
+    function enterMyRoom(studentId) {
+        const s = allStudents.find(item => item.id == studentId);
+        const content = document.getElementById('app-content');
+
+        // 마이룸 화면 레이아웃으로 전체 교체
+        content.innerHTML = `
+            <div class="my-room-card" style="background: rgba(255,255,255,0.9); padding: 30px; border-radius: 30px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                <h1 style="color: #ff8f00; margin-bottom: 5px;">🏠 ${s.name}의 Happy 룸</h1>
+                <p style="color: #888; margin-bottom: 25px;">오늘도 한 걸음 성장하는 중!</p>
+                
+                <div style="background: #fff9c4; padding: 20px; border-radius: 20px; border: 2px dashed #ffca28; margin-bottom: 20px; text-align: left;">
+                    <p>⭐ <b>현재 레벨:</b> LV.${s.lv}</p>
+                    <p>💰 <b>보유 포인트:</b> ${s.point}P</p>
+                    <p>🏃 <b>최근 활동:</b> ${s.lastAction || '활동 기록 없음'}</p>
+                    <p>🎮 <b>마크 좌표:</b> <span style="color: #2e7d32;">${s.mcCoords || '좌표 미정'}</span></p>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <button onclick="alert('준비 중!')" style="padding: 15px; border-radius: 15px; border: none; background: #ffca28; color: white; font-weight: bold;">🎁 과제 제출</button>
+                    <button onclick="alert('준비 중!')" style="padding: 15px; border-radius: 15px; border: none; background: #4fc3f7; color: white; font-weight: bold;">🖼️ 내 작품함</button>
+                </div>
+
+                <button onclick="location.reload()" style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">← 숲으로 돌아가기</button>
+            </div>
+        `;
+        
+        // [선생님 팁] 나중에 여기에 배경화면을 바꾸는 코드를 넣으면 완벽합니다!
+    }
+
+    window.onload = loadData;
+</script>
