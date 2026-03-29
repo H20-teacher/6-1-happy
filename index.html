@@ -1,172 +1,320 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐰 도산 6-1 Happy >.<</title>
-    <style>
-        body { margin: 0; padding: 0; background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('./bd.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Pretendard', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 500px; text-align: center; padding: 20px; padding-bottom: 100px; }
-        h1 { color: #fbc02d; text-shadow: 1px 1px 2px white; margin-top: 10px; font-size: 1.6rem; }
-        
-        /* 상단 탭 스타일 */
-        .tab-menu { display: flex; background: rgba(255,255,255,0.8); border-radius: 50px; margin-bottom: 20px; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .tab-btn { flex: 1; padding: 12px; border: none; background: none; border-radius: 50px; cursor: pointer; font-weight: bold; color: #888; transition: 0.3s; }
-        .tab-btn.active { background: #fbc02d; color: white; }
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-        .content-section { display: none; animation: fadeIn 0.3s; }
-        .content-section.active { display: block; }
+import { useState, useEffect, useRef } from 'react';
+import { Home, User, Users, ChevronLeft, ExternalLink } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { Student, Lesson } from './types';
 
-        /* 카드 공통 스타일 */
-        .student-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .student-card { border: 2px solid #ffca28; padding: 18px; border-radius: 22px; cursor: pointer; background: rgba(255, 255, 255, 0.9); transition: 0.2s; }
-        .student-card:active { transform: scale(0.95); }
-        .student-card h2 { margin: 0; font-size: 1.1rem; color: #ff8f00; }
-        .student-card p { margin: 5px 0 0; font-size: 0.8rem; color: #666; }
+// [확인] 선생님의 구글 앱스 스크립트 API 주소를 꼭 넣어주세요!
+const API_URL = "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec";
 
-        /* 마이룸 상세 */
-        .room-card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 10px; }
-        .info-box { background: #fff9c4; padding: 20px; border-radius: 20px; border: 2px dashed #ffca28; margin-bottom: 20px; text-align: left; line-height: 1.7; }
-        .mood-buttons { display: flex; justify-content: space-around; margin: 15px 0; }
-        .mood-btn { font-size: 2.3rem; cursor: pointer; border: none; background: none; }
-        .action-btn { width: 100%; padding: 15px; border-radius: 15px; border: none; background: #ffca28; color: white; font-weight: bold; cursor: pointer; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-</head>
-<body>
+export default function App() {
+  const [activeTab, setActiveTab] = useState<'home' | 'myroom' | 'explore'>('home');
+  const [currentUser, setCurrentUser] = useState<string>(localStorage.getItem('studentName') || "미호");
+  const [allStudents, setAllStudents] = useState<Student[]>([]);
+  const [lessons, setLessons] = useState<Lesson[]>([]);
+  const [selectedFriend, setSelectedFriend] = useState<Student | null>(null);
+  const [loading, setLoading] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    <div class="container">
-        <h1>🐰 도산 6-1 Happy 숲</h1>
-        
-        <div class="tab-menu">
-            <button class="tab-btn active" onclick="switchTab('attendance')">🌳 감정출석</button>
-            <button class="tab-btn" onclick="switchTab('explore')">🏠 친구룸 구경</button>
-        </div>
+  useEffect(() => {
+    loadData();
+  }, []);
 
-        <div id="section-attendance" class="content-section active">
-            <p style="font-size:0.9rem; color:#444; margin-bottom:15px; font-weight:bold;">👇 자기 이름을 눌러 오늘을 기록해봐!</p>
-            <div id="attendance-grid" class="student-grid">데이터 로딩 중...</div>
-        </div>
+  const loadData = async () => {
+    try {
+      // Note: In a real scenario, this would fetch from API_URL
+      // For demo purposes, we'll use some mock data if API_URL is default
+      if (API_URL === "YOUR_GOOGLE_APPS_SCRIPT_API_URL") {
+        const mockStudents: Student[] = [
+          { name: "미호", lv: 5, point: 1200, mcCoords: "100, 64, -200" },
+          { name: "준호", lv: 3, point: 800, mcCoords: "50, 70, 150" },
+          { name: "서연", lv: 7, point: 2500, mcCoords: "-300, 65, 400" },
+          { name: "민지", lv: 4, point: 1100 },
+          { name: "도윤", lv: 2, point: 450 },
+        ];
 
-        <div id="section-explore" class="content-section">
-            <p style="font-size:0.9rem; color:#444; margin-bottom:15px; font-weight:bold;">👀 친구들은 얼마나 성장했을까?</p>
-            <div id="explore-grid" class="student-grid">데이터 로딩 중...</div>
-        </div>
+        // Mock lessons for the '과제' tab
+        const todayStr = new Date().toISOString().split('T')[0];
+        const mockLessons: Lesson[] = [
+          { 
+            date: todayStr, 
+            content: "오늘은 분수의 덧셈을 배워봅시다. 아래 링크를 클릭해서 영상을 시청하세요!", 
+            link: "https://www.youtube.com/results?search_query=분수의+덧셈" 
+          },
+          { 
+            date: "2026-03-30", 
+            content: "내일의 학습 미리보기: 국어 6단원 읽기", 
+          }
+        ];
 
-        <div id="section-detail" class="content-section">
-            <div class="room-card">
-                <h2 id="room-owner" style="color: #ff8f00; margin-top:0;"></h2>
+        setAllStudents(mockStudents);
+        setLessons(mockLessons);
+      } else {
+        const response = await fetch(API_URL);
+        const result = await response.json();
+        setAllStudents(result.students || []);
+        setLessons(result.lessons || []); // Assuming GAS returns a 'lessons' array from the '과제' tab
+      }
+    } catch (e) {
+      console.error("데이터 로드 실패", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getTodayLesson = () => {
+    const today = new Date().toISOString().split('T')[0];
+    return lessons.find(l => l.date === today);
+  };
+
+  const updateDate = () => {
+    const now = new Date();
+    return now.toLocaleDateString('ko-KR', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric', 
+      weekday: 'long' 
+    });
+  };
+
+  const sendMood = async (mood: string) => {
+    const today = new Date().toLocaleDateString();
+    if (localStorage.getItem('done_' + currentUser) === today) {
+      return alert("이미 오늘 기분을 기록했어!");
+    }
+
+    try {
+      if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_API_URL") {
+        await fetch(API_URL, { 
+          method: "POST", 
+          body: JSON.stringify({ type: "mood", name: currentUser, mood: mood }) 
+        });
+      }
+      localStorage.setItem('done_' + currentUser, today);
+      alert(`✅ ${currentUser}의 기분(${mood}) 저장 완료!`);
+    } catch (e) {
+      alert("저장 실패");
+    }
+  };
+
+  const uploadFile = async () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      try {
+        if (API_URL !== "YOUR_GOOGLE_APPS_SCRIPT_API_URL") {
+          await fetch(API_URL, { 
+            method: "POST", 
+            body: JSON.stringify({ 
+              base64: base64, 
+              mimeType: file.type, 
+              fileName: currentUser + "_" + file.name 
+            }) 
+          });
+        }
+        alert("✅ 과제 제출 성공!");
+      } catch (e) {
+        alert("제출 실패");
+      }
+    };
+  };
+
+  const me = allStudents.find(s => s.name === currentUser);
+
+  return (
+    <div className="flex flex-col items-center min-h-screen font-['Pretendard']">
+      <div className="container w-full max-w-[500px] text-center p-5 pb-[100px]">
+        <h1 className="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_rgba(255,255,255,1)]">
+          🐰 도산 6-1 Happy &gt;.&lt;
+        </h1>
+
+        <AnimatePresence mode="wait">
+          {activeTab === 'home' && (
+            <motion.div
+              key="home"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full"
+            >
+              <div className="font-bold mb-[15px]">{updateDate()}</div>
+              
+              <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                <p className="m-0 font-bold text-[#ff8f00]">🌈 지금 나의 기분은?</p>
+                <div className="flex justify-around mt-[15px]">
+                  {['🤩', '😊', '😐', '😢', '😡'].map((emoji, idx) => {
+                    const moods = ['최고!', '좋아요', '평범해요', '속상해요', '화나요'];
+                    return (
+                      <button 
+                        key={idx}
+                        className="text-[2.2rem] cursor-pointer border-none bg-none transition-transform hover:scale-110 active:scale-95"
+                        onClick={() => sendMood(moods[idx])}
+                      >
+                        {emoji}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                <h3 className="text-[#fbc02d] font-bold text-lg mb-2">📝 오늘의 학습 문제</h3>
+                {loading ? (
+                  <p className="text-gray-500">불러오는 중...</p>
+                ) : (
+                  <div className="text-left">
+                    {getTodayLesson() ? (
+                      <>
+                        <p className="text-gray-700 whitespace-pre-wrap">{getTodayLesson()?.content}</p>
+                        {getTodayLesson()?.link && (
+                          <a 
+                            href={getTodayLesson()?.link} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 mt-3 text-[#ff8f00] font-bold hover:underline"
+                          >
+                            <ExternalLink size={16} /> 학습 링크 바로가기
+                          </a>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-gray-500 italic">오늘은 등록된 학습 문제가 없습니다. 빛나는 하루 보내세요!</p>
+                    )}
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+
+          {activeTab === 'myroom' && (
+            <motion.div
+              key="myroom"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full"
+            >
+              <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                <h2 className="text-[#ff8f00] text-xl font-bold mb-4">
+                  🏠 {me ? `${me.name}의 마이룸` : '나의 공간'}
+                </h2>
                 
-                <div id="mood-record-area">
-                    <p style="font-weight:bold; font-size:0.9rem;">🌈 오늘 기분 기록하기</p>
-                    <div class="mood-buttons">
-                        <button class="mood-btn" onclick="sendMood('최고!')">🤩</button>
-                        <button class="mood-btn" onclick="sendMood('좋아요')">😊</button>
-                        <button class="mood-btn" onclick="sendMood('평범해요')">😐</button>
-                        <button class="mood-btn" onclick="sendMood('속상해요')">😢</button>
-                        <button class="mood-btn" onclick="sendMood('화나요')">😡</button>
-                    </div>
+                <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
+                  {loading ? (
+                    <p>데이터를 불러오는 중...</p>
+                  ) : me ? (
+                    <>
+                      <p className="mb-2">⭐ <b>레벨:</b> LV.{me.lv}</p>
+                      <p className="mb-2">💰 <b>포인트:</b> {me.point}P</p>
+                      <p>🎮 <b>마크 좌표:</b> {me.mcCoords || '미정'}</p>
+                    </>
+                  ) : (
+                    <p>사용자 정보를 찾을 수 없습니다.</p>
+                  )}
                 </div>
 
-                <div class="info-box" id="student-info"></div>
+                <input 
+                  type="file" 
+                  ref={fileInputRef}
+                  className="hidden" 
+                  accept="image/*" 
+                  onChange={uploadFile}
+                />
+                <button 
+                  className="w-full p-[15px] rounded-[15px] border-none bg-[#ffca28] text-white font-bold cursor-pointer transition-colors hover:bg-[#fbc02d]"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  🎁 개인 과제 제출하기
+                </button>
+              </div>
+            </motion.div>
+          )}
 
-                <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="uploadFile()">
-                <button id="upload-btn" class="action-btn" onclick="document.getElementById('fileInput').click()">🎁 과제 제출하기</button>
-                
-                <button style="margin-top:20px; color:#888; background:none; border:none; text-decoration:underline; cursor:pointer;" onclick="goBack()">목록으로 돌아가기</button>
-            </div>
-        </div>
+          {activeTab === 'explore' && (
+            <motion.div
+              key="explore"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="w-full"
+            >
+              {!selectedFriend ? (
+                <div>
+                  <p className="font-bold mb-[15px]">🌳 우리 반 친구들 둘러보기</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {allStudents
+                      .filter(s => s.name !== currentUser)
+                      .map((s, idx) => (
+                        <div 
+                          key={idx}
+                          className="bg-white border-2 border-[#ffca28] p-[15px] rounded-[20px] cursor-pointer transition-transform hover:scale-[1.02]"
+                          onClick={() => setSelectedFriend(s)}
+                        >
+                          <div className="text-[1.5rem]">🌳</div>
+                          <div className="font-bold mt-[5px]">{s.name}</div>
+                          <div className="text-[0.8rem] text-[#888]">LV.{s.lv}</div>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                  <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {selectedFriend.name}의 공간</h2>
+                  <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
+                    <p className="mb-2">⭐ <b>레벨:</b> LV.{selectedFriend.lv}</p>
+                    <p className="mb-2">💰 <b>포인트:</b> {selectedFriend.point}P</p>
+                    <p>🎮 <b>마크 좌표:</b> {selectedFriend.mcCoords || '미정'}</p>
+                    <p className="text-[0.8rem] text-gray-500 text-center mt-5">(친구의 방은 구경만 가능해요!)</p>
+                  </div>
+                  <button 
+                    className="w-full p-[15px] rounded-[15px] border-none bg-[#ddd] text-[#666] font-bold cursor-pointer flex items-center justify-center gap-2"
+                    onClick={() => setSelectedFriend(null)}
+                  >
+                    <ChevronLeft size={18} /> 뒤로 가기
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <p className="text-[0.7rem] text-[#888] mt-[30px] leading-[1.4] px-5">
+          본 플랫폼에 사용된 시각 자료는 스튜디오 지브리(Studio Ghibli)에서 공식적으로 허용한 '상식적인 범위 내의 교육적 활용' 가이드라인을 준수하며, 출처를 명확히 표기함.
+        </p>
+      </div>
+
+      {/* 하단 네비게이션 바 */}
+      <div className="fixed bottom-0 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
+        <button 
+          className={`cursor-pointer text-center flex-1 font-bold text-[0.8rem] flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-[#fbc02d]' : 'text-[#bbb]'}`}
+          onClick={() => { setActiveTab('home'); setSelectedFriend(null); }}
+        >
+          <Home size={22} />
+          <span>홈</span>
+        </button>
+        <button 
+          className={`cursor-pointer text-center flex-1 font-bold text-[0.8rem] flex flex-col items-center gap-1 ${activeTab === 'myroom' ? 'text-[#fbc02d]' : 'text-[#bbb]'}`}
+          onClick={() => { setActiveTab('myroom'); setSelectedFriend(null); }}
+        >
+          <User size={22} />
+          <span>나의 방</span>
+        </button>
+        <button 
+          className={`cursor-pointer text-center flex-1 font-bold text-[0.8rem] flex flex-col items-center gap-1 ${activeTab === 'explore' ? 'text-[#fbc02d]' : 'text-[#bbb]'}`}
+          onClick={() => { setActiveTab('explore'); setSelectedFriend(null); }}
+        >
+          <Users size={22} />
+          <span>친구들</span>
+        </button>
+      </div>
     </div>
-
-<script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxpt56cC1s0VQOSRDcUXs8tgTH7gzgwcTjTk-QbxotvO0azKdvZp_5U5SRwFc0_kMTe/exec";
-    let allStudents = [];
-    let selectedStudent = null;
-    let currentTab = 'attendance';
-    const fruits = ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍑', '🍒', '🥝', '🍍'];
-
-    document.addEventListener("DOMContentLoaded", loadData);
-
-    async function loadData() {
-        try {
-            const response = await fetch(API_URL);
-            const result = await response.json();
-            allStudents = result.students;
-            renderAllGrids();
-        } catch (e) { console.error("데이터 실패"); }
-    }
-
-    function switchTab(tab) {
-        currentTab = tab;
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
-        
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        document.getElementById(`section-${tab}`).classList.add('active');
-    }
-
-    function renderAllGrids() {
-        const attGrid = document.getElementById('attendance-grid');
-        const expGrid = document.getElementById('explore-grid');
-        
-        const html = allStudents.map((s, index) => `
-            <div class="student-card" onclick="enterRoom(${s.id})">
-                <h2>${fruits[index % fruits.length]} ${s.name}</h2>
-                <p>LV.${s.lv} | ${s.point}P</p>
-            </div>
-        `).join('');
-
-        attGrid.innerHTML = html;
-        expGrid.innerHTML = html;
-    }
-
-    function enterRoom(id) {
-        selectedStudent = allStudents.find(s => s.id == id);
-        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
-        const detail = document.getElementById('section-detail');
-        detail.classList.add('active');
-
-        document.getElementById('room-owner').innerText = `🏠 ${selectedStudent.name}의 룸`;
-        document.getElementById('student-info').innerHTML = `
-            <p>⭐ <b>레벨:</b> LV.${selectedStudent.lv}</p>
-            <p>💰 <b>보유 포인트:</b> ${selectedStudent.point}P</p>
-            <p>🎮 <b>마크 좌표:</b> <span style="color:#2e7d32;">${selectedStudent.mcCoords || '미정'}</span></p>
-        `;
-
-        // 구경 모드일 때는 기분 기록과 업로드 버튼을 숨깁니다.
-        const isExplore = (currentTab === 'explore');
-        document.getElementById('mood-record-area').style.display = isExplore ? 'none' : 'block';
-        document.getElementById('upload-btn').style.display = isExplore ? 'none' : 'block';
-    }
-
-    function goBack() { switchTab(currentTab); }
-
-    async function sendMood(mood) {
-        const today = new Date().toLocaleDateString();
-        if (localStorage.getItem('done_' + selectedStudent.name) === today) return alert("이미 기록했어!");
-        alert("기록 중...");
-        try {
-            await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: selectedStudent.name, mood: mood }) });
-            localStorage.setItem('done_' + selectedStudent.name, today);
-            alert("✅ 완료!");
-        } catch (e) { alert("실패!"); }
-    }
-
-    async function uploadFile() {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            try {
-                const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({ base64: base64, mimeType: file.type, fileName: selectedStudent.name + "_" + file.name }) });
-                alert("✅ 전송 성공!");
-            } catch (e) { alert("❌ 실패!"); }
-        };
-    }
-</script>
-</body>
-</html>
+  );
+}
