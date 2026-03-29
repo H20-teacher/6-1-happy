@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="manifest" href="manifest.json">
+    <title>6-1 Happy</title>
+    <style>
+        /* 아까 만든 노란색 해피 테마 디자인들 */
+        .student-card { border: 2px solid #ffca28; padding: 20px; margin: 10px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div id="app-content" class="container">
+        <h1>🌻 6-1 Happy</h1>
+        <div id="student-grid">로딩 중...</div>
+    </div>
+
+    <script>
+        // 아까 메모한 GAS 배포 URL을 여기에 꼭 넣으세요!
+        const API_URL = "https://script.google.com/macros/s/선생님의_GAS_ID/exec";
+
+        // 페이지가 열리자마자 시트 데이터를 불러와서 6명을 화면에 띄웁니다.
+        window.onload = async function() {
+            try {
+                const response = await fetch(API_URL);
+                const students = await response.json();
+                
+                const grid = document.getElementById('student-grid');
+                grid.innerHTML = students.map(s => `
+                    <div class="student-card" onclick="enterMyRoom(${JSON.stringify(s)})">
+                        <h3>${s.name}</h3>
+                        <p>LV.${s.lv} | ${s.point}P</p>
+                    </div>
+                `).join('');
+            } catch (e) {
+                console.error("데이터 로드 실패!", e);
+            }
+        };
+
+        function enterMyRoom(s) {
+            // 학생 개별 마이룸 화면으로 전환하는 로직
+            document.getElementById('app-content').innerHTML = `
+                <h2>🏠 ${s.name}의 Happy 룸</h2>
+                <div class="status-box">
+                    <p>✨ 레벨: ${s.lv}</p>
+                    <p>💰 포인트: ${s.point}P</p>
+                    <p>🎮 마크: ${s.mcCoords}</p>
+                </div>
+                <button onclick="location.reload()">뒤로가기</button>
+            `;
+        }
+    </script>
+</body>
+</html>
