@@ -18,23 +18,25 @@
 </head>
 <body>
 
+    <!-- 1. 로그인 화면 -->
     <div id="login-screen">
         <h1 class="text-[#fbc02d] text-3xl font-bold mb-8">🐰 도산 6-1 Happy</h1>
         <div id="login-box" class="bg-white p-8 rounded-[30px] card-shadow w-full max-w-[350px]">
             <div id="loading-status" class="mb-4 text-blue-500 font-bold animate-pulse">📡 서버에서 명단을 불러오는 중...</div>
             <div id="login-controls" class="hidden">
                 <p class="text-gray-600 mb-4 font-bold">이름을 입력하고 입장하세요!</p>
-                <input type="text" id="login-name" class="w-full p-4 border-2 border-[#ffca28] rounded-xl mb-4 text-center text-lg font-bold outline-none" placeholder="이름 입력">
-                <button onclick="handleLogin()" class="w-full p-4 bg-[#ffca28] text-white font-bold rounded-xl hover:bg-[#fbc02d]">입장하기</button>
+                <input type="text" id="login-name" class="w-full p-4 border-2 border-[#ffca28] rounded-xl mb-4 text-center text-lg font-bold outline-none" placeholder="이름 입력" onkeypress="if(event.keyCode==13) handleLogin()">
+                <button onclick="handleLogin()" class="w-full p-4 bg-[#ffca28] text-white font-bold rounded-xl hover:bg-[#fbc02d] transition-colors">입장하기</button>
                 <p id="login-error" class="text-red-500 mt-4 text-sm font-bold hidden">명단에 없는 이름입니다!</p>
-                <!-- 디버깅용: 명단 확인 버튼 (나중에 지우셔도 됩니다) -->
-                <button onclick="alert('등록된 이름들: ' + allStudents.map(s => s.name).join(', '))" class="mt-6 text-[0.6rem] text-gray-300 underline">등록된 명단 확인하기</button>
+                <button onclick="checkNames()" class="mt-6 text-[0.6rem] text-gray-300 underline">등록된 명단 확인하기</button>
             </div>
         </div>
     </div>
 
+    <!-- 2. 메인 앱 컨텐츠 -->
     <div id="main-app" class="w-full max-w-[500px] text-center p-5 pb-[100px] hidden">
         <h1 class="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">🐰 도산 6-1 Happy >.<</h1>
+        
         <div id="tab-home" class="tab-content active-tab">
             <div id="today-date" class="font-bold mb-4"></div>
             <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
@@ -52,6 +54,7 @@
                 <div id="lesson-content"></div>
             </div>
         </div>
+
         <div id="tab-myroom" class="tab-content">
             <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
                 <h2 id="my-room-title" class="text-[#ff8f00] text-xl font-bold mb-4">🏠 나의 마이룸</h2>
@@ -60,6 +63,7 @@
                 <button class="w-full p-4 rounded-xl bg-[#ffca28] text-white font-bold" onclick="document.getElementById('fileInput').click()">🎁 개인 과제 제출하기</button>
             </div>
         </div>
+
         <div id="tab-explore" class="tab-content">
             <div id="explore-list">
                 <p class="font-bold mb-4">🌳 우리 반 친구들 둘러보기</p>
@@ -73,7 +77,9 @@
                 </div>
             </div>
         </div>
-        <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
+
+        <!-- 하단 네비게이션 (ID 추가 및 초기 숨김) -->
+        <div id="nav-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000] hidden">
             <button id="nav-home" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-[#fbc02d]" onclick="showTab('home')"><i data-lucide="home"></i><span>홈</span></button>
             <button id="nav-myroom" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-gray-400" onclick="showTab('myroom')"><i data-lucide="user"></i><span>나의 방</span></button>
             <button id="nav-explore" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-gray-400" onclick="showTab('explore')"><i data-lucide="users"></i><span>친구들</span></button>
@@ -81,7 +87,6 @@
     </div>
 
     <script>
-        // [확인] 선생님의 실제 API 주소를 여기에 넣어주세요.
         const API_URL = "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec";
         
         let currentUser = sessionStorage.getItem('studentName'); 
@@ -103,27 +108,51 @@
                 lessons = result.lessons || [];
                 status.classList.add('hidden');
                 document.getElementById('login-controls').classList.remove('hidden');
-                if (currentUser && allStudents.some(s => s.name.trim() === currentUser.trim())) showApp();
+                
+                // 세션에 이름이 있고 명단에 있으면 자동 입장
+                if (currentUser) {
+                    const found = allStudents.find(s => s.name.replace(/\s/g, "") === currentUser.replace(/\s/g, ""));
+                    if (found) showApp();
+                }
             } catch (e) {
                 status.innerHTML = `<span class="text-red-500">❌ 서버 연결 실패!</span>`;
             }
         }
 
         function handleLogin() {
-            const inputName = document.getElementById('login-name').value.trim(); // 입력값 공백 제거
-            const student = allStudents.find(s => s.name.trim() === inputName); // 시트값 공백 제거 후 비교
+            const inputField = document.getElementById('login-name');
+            const inputName = inputField.value.trim();
+            
+            if (!inputName) return alert("이름을 입력해 주세요!");
+
+            // 모든 공백을 제거하고 비교하는 강력한 로직
+            const student = allStudents.find(s => {
+                const cleanSheetName = s.name.toString().replace(/\s/g, "");
+                const cleanInputName = inputName.replace(/\s/g, "");
+                return cleanSheetName === cleanInputName;
+            });
+
             if (student) {
-                currentUser = inputName;
+                currentUser = student.name; // 시트에 저장된 정확한 이름 사용
                 sessionStorage.setItem('studentName', currentUser);
                 showApp();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
+                // 디버깅을 위해 콘솔에 출력 (F12 눌러서 확인 가능)
+                console.log("입력값:", inputName);
+                console.log("명단:", allStudents.map(s => s.name));
             }
+        }
+
+        function checkNames() {
+            if (allStudents.length === 0) return alert("아직 명단을 불러오지 못했습니다.");
+            alert("등록된 명단:\n" + allStudents.map(s => `[${s.name}]`).join(", "));
         }
 
         function showApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('nav-bar').classList.remove('hidden');
             renderAll();
             lucide.createIcons();
         }
@@ -138,13 +167,15 @@
             } else {
                 lessonDiv.innerHTML = `<p class="text-gray-500 italic">학습 문제가 없습니다.</p>`;
             }
-            const me = allStudents.find(s => s.name.trim() === currentUser.trim());
+
+            const me = allStudents.find(s => s.name.replace(/\s/g, "") === currentUser.replace(/\s/g, ""));
             if (me) {
                 document.getElementById('my-room-title').innerText = `🏠 ${me.name}의 마이룸`;
                 document.getElementById('my-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${me.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${me.point}P</p><p>🎮 <b>마크 좌표:</b> ${me.mcCoords || '미정'}</p>`;
             }
+
             const grid = document.getElementById('friends-grid');
-            grid.innerHTML = allStudents.filter(s => s.name.trim() !== currentUser.trim()).map(s => `
+            grid.innerHTML = allStudents.filter(s => s.name.replace(/\s/g, "") !== currentUser.replace(/\s/g, "")).map(s => `
                 <div class="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onclick="viewFriend('${s.name}')">
                     <div class="text-2xl">🌳</div><div class="font-bold mt-1">${s.name}</div><div class="text-sm text-gray-400">LV.${s.lv}</div>
                 </div>
@@ -155,13 +186,17 @@
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
             document.getElementById('tab-' + tabName).classList.add('active-tab');
-            document.querySelectorAll('.fixed button').forEach(b => b.classList.replace('text-[#fbc02d]', 'text-gray-400'));
+            document.querySelectorAll('#nav-bar button').forEach(b => {
+                b.classList.remove('text-[#fbc02d]');
+                b.classList.add('text-gray-400');
+            });
             document.getElementById('nav-' + tabName).classList.replace('text-gray-400', 'text-[#fbc02d]');
             if(tabName === 'explore') closeFriendRoom();
         }
 
         function viewFriend(name) {
             const friend = allStudents.find(s => s.name === name);
+            if (!friend) return;
             document.getElementById('explore-list').classList.add('hidden');
             document.getElementById('friend-detail').classList.remove('hidden');
             document.getElementById('friend-name').innerText = `🏠 ${friend.name}의 공간`;
