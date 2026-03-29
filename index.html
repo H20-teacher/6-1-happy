@@ -7,202 +7,165 @@
     <style>
         body { margin: 0; padding: 0; background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('./bd.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Pretendard', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 500px; text-align: center; padding: 20px; padding-bottom: 100px; }
-        h1 { color: #fbc02d; text-shadow: 1px 1px 2px white; margin-top: 20px; font-size: 1.8rem; }
+        h1 { color: #fbc02d; text-shadow: 1px 1px 2px white; margin-top: 10px; font-size: 1.6rem; }
         
-        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-        #login-overlay input { padding: 18px; border-radius: 20px; border: 3px solid #fbc02d; font-size: 1.2rem; width: 220px; text-align: center; margin-bottom: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        #login-overlay button { padding: 15px 40px; border-radius: 20px; border: none; background: #fbc02d; color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: 0.2s; }
-        #login-overlay button:active { transform: scale(0.95); }
+        /* 상단 탭 스타일 */
+        .tab-menu { display: flex; background: rgba(255,255,255,0.8); border-radius: 50px; margin-bottom: 20px; padding: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .tab-btn { flex: 1; padding: 12px; border: none; background: none; border-radius: 50px; cursor: pointer; font-weight: bold; color: #888; transition: 0.3s; }
+        .tab-btn.active { background: #fbc02d; color: white; }
 
-        .tab-content { display: none; width: 100%; animation: fadeIn 0.3s; }
-        .active-tab { display: block; }
+        .content-section { display: none; animation: fadeIn 0.3s; }
+        .content-section.active { display: block; }
+
+        /* 카드 공통 스타일 */
+        .student-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .student-card { border: 2px solid #ffca28; padding: 18px; border-radius: 22px; cursor: pointer; background: rgba(255, 255, 255, 0.9); transition: 0.2s; }
+        .student-card:active { transform: scale(0.95); }
+        .student-card h2 { margin: 0; font-size: 1.1rem; color: #ff8f00; }
+        .student-card p { margin: 5px 0 0; font-size: 0.8rem; color: #666; }
+
+        /* 마이룸 상세 */
+        .room-card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); margin-top: 10px; }
+        .info-box { background: #fff9c4; padding: 20px; border-radius: 20px; border: 2px dashed #ffca28; margin-bottom: 20px; text-align: left; line-height: 1.7; }
+        .mood-buttons { display: flex; justify-content: space-around; margin: 15px 0; }
+        .mood-btn { font-size: 2.3rem; cursor: pointer; border: none; background: none; }
+        .action-btn { width: 100%; padding: 15px; border-radius: 15px; border: none; background: #ffca28; color: white; font-weight: bold; cursor: pointer; }
+        
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        
-        .mood-section, .lesson-box { background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .mood-buttons { display: flex; justify-content: space-around; margin-top: 15px; }
-        .mood-btn { font-size: 2.5rem; cursor: pointer; border: none; background: none; transition: 0.2s; }
-        .mood-btn:active { transform: scale(0.8); }
-
-        .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-around; padding: 15px 0; border-top: 2px solid #fbc02d; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05); }
-        .nav-item { cursor: pointer; text-align: center; color: #bbb; flex: 1; font-weight: bold; font-size: 0.9rem; }
-        .nav-item.active { color: #fbc02d; }
-        .nav-item span { display: block; margin-top: 3px; }
-
-        .my-room-card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; }
-        .info-box { background: #fff9c4; padding: 20px; border-radius: 20px; border: 2px dashed #ffca28; margin-bottom: 25px; text-align: left; line-height: 1.8; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay" style="display:none;">
-        <h2 style="color:#ff8f00; margin-bottom:20px;">🐰 도산 6-1 Happy 숲<br>너의 이름은?</h2>
-        <input type="text" id="user-name" placeholder="이름을 정확히 입력해줘">
-        <button onclick="login()">입장하기</button>
-        <p style="font-size:0.8rem; color:gray; margin-top:15px;">(구글 시트에 적힌 이름과 똑같이 입력해줘!)</p>
-    </div>
+    <div class="container">
+        <h1>🐰 도산 6-1 Happy 숲</h1>
+        
+        <div class="tab-menu">
+            <button class="tab-btn active" onclick="switchTab('attendance')">🌳 감정출석</button>
+            <button class="tab-btn" onclick="switchTab('explore')">🏠 친구룸 구경</button>
+        </div>
 
-    <div class="container" id="main-app">
-        <h1>🐰 도산 6-1 Happy >.<</h1>
-        <div id="today-date" style="font-weight:bold; margin-bottom:25px; background:rgba(255,255,255,0.7); padding:5px 15px; border-radius:50px; display:inline-block;"></div>
+        <div id="section-attendance" class="content-section active">
+            <p style="font-size:0.9rem; color:#444; margin-bottom:15px; font-weight:bold;">👇 자기 이름을 눌러 오늘을 기록해봐!</p>
+            <div id="attendance-grid" class="student-grid">데이터 로딩 중...</div>
+        </div>
 
-        <div id="tab-home" class="tab-content active-tab">
-            <div class="mood-section">
-                <p id="welcome-msg" style="margin:0; font-weight:bold; color:#ff8f00; font-size:1.1rem;"></p>
-                <div class="mood-buttons">
-                    <button class="mood-btn" onclick="sendMood('최고!')">🤩</button>
-                    <button class="mood-btn" onclick="sendMood('좋아요')">😊</button>
-                    <button class="mood-btn" onclick="sendMood('평범해요')">😐</button>
-                    <button class="mood-btn" onclick="sendMood('속상해요')">😢</button>
-                    <button class="mood-btn" onclick="sendMood('화나요')">😡</button>
+        <div id="section-explore" class="content-section">
+            <p style="font-size:0.9rem; color:#444; margin-bottom:15px; font-weight:bold;">👀 친구들은 얼마나 성장했을까?</p>
+            <div id="explore-grid" class="student-grid">데이터 로딩 중...</div>
+        </div>
+
+        <div id="section-detail" class="content-section">
+            <div class="room-card">
+                <h2 id="room-owner" style="color: #ff8f00; margin-top:0;"></h2>
+                
+                <div id="mood-record-area">
+                    <p style="font-weight:bold; font-size:0.9rem;">🌈 오늘 기분 기록하기</p>
+                    <div class="mood-buttons">
+                        <button class="mood-btn" onclick="sendMood('최고!')">🤩</button>
+                        <button class="mood-btn" onclick="sendMood('좋아요')">😊</button>
+                        <button class="mood-btn" onclick="sendMood('평범해요')">😐</button>
+                        <button class="mood-btn" onclick="sendMood('속상해요')">😢</button>
+                        <button class="mood-btn" onclick="sendMood('화나요')">😡</button>
+                    </div>
                 </div>
-            </div>
-            <div class="lesson-box">
-                <h3 style="color:#fbc02d; margin-top:0;">📝 오늘의 학습 문제</h3>
-                <p>도산 6-1반 친구들, 오늘 하루도 행복하게 보내자! 🚀</p>
+
+                <div class="info-box" id="student-info"></div>
+
+                <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="uploadFile()">
+                <button id="upload-btn" class="action-btn" onclick="document.getElementById('fileInput').click()">🎁 과제 제출하기</button>
+                
+                <button style="margin-top:20px; color:#888; background:none; border:none; text-decoration:underline; cursor:pointer;" onclick="goBack()">목록으로 돌아가기</button>
             </div>
         </div>
-
-        <div id="tab-myroom" class="tab-content">
-            <div id="my-room-content">데이터를 불러오는 중...</div>
-        </div>
-    </div>
-
-    <div class="nav-bar">
-        <div class="nav-item active" id="nav-home" onclick="showTab('home')">🏠<span>홈</span></div>
-        <div class="nav-item" id="nav-myroom" onclick="showTab('myroom')">🌳<span>마이룸</span></div>
     </div>
 
 <script>
-    // [필수 수정] 1단계에서 복사한 '새 배포 주소'를 여기에 붙여넣으세요!
     const API_URL = "https://script.google.com/macros/s/AKfycbxpt56cC1s0VQOSRDcUXs8tgTH7gzgwcTjTk-QbxotvO0azKdvZp_5U5SRwFc0_kMTe/exec";
-    let currentUser = localStorage.getItem('studentName');
     let allStudents = [];
+    let selectedStudent = null;
+    let currentTab = 'attendance';
+    const fruits = ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍑', '🍒', '🥝', '🍍'];
 
-    // 페이지 로드 시 초기화
-    document.addEventListener("DOMContentLoaded", function() {
-        if (!currentUser) {
-            document.getElementById('login-overlay').style.display = 'flex';
-        } else {
-            initApp();
-        }
-    });
+    document.addEventListener("DOMContentLoaded", loadData);
 
-    // 로그인 기능
-    function login() {
-        const nameInput = document.getElementById('user-name').value;
-        const name = nameInput.trim(); // 앞뒤 공백 제거
-        if (name === "") return alert("이름을 입력해줘!");
-        
-        localStorage.setItem('studentName', name);
-        currentUser = name;
-        document.getElementById('login-overlay').style.display = 'none';
-        initApp();
-    }
-
-    // 앱 초기화 및 데이터 로드
-    function initApp() {
-        document.getElementById('welcome-msg').innerText = `🌈 ${currentUser}, 오늘의 기분은?`;
-        updateDate();
-        loadData(); // 구글 시트 데이터 가져오기
-    }
-
-    function updateDate() {
-        const now = new Date();
-        document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-    }
-
-    // 구글 시트 데이터 로드 (보안 및 에러 처리 보완)
     async function loadData() {
         try {
             const response = await fetch(API_URL);
-            if (!response.ok) throw new Error('네트워크 응답 실패');
             const result = await response.json();
-            if (!result || !result.students) throw new Error('데이터 형식 에러');
             allStudents = result.students;
-            console.log("데이터 로드 성공:", allStudents);
-        } catch (e) {
-            console.error("데이터 실패:", e);
-            document.getElementById('my-room-content').innerHTML = `
-                <div style="background:white; padding:20px; border-radius:20px; color:red;">
-                    ❌ 데이터 연결 실패!<br><small>${e.message}</small><br>
-                    <button onclick="loadData()">다시 시도</button>
-                </div>`;
-        }
+            renderAllGrids();
+        } catch (e) { console.error("데이터 실패"); }
     }
 
-    // 기분 전송 기능
+    function switchTab(tab) {
+        currentTab = tab;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelector(`button[onclick="switchTab('${tab}')"]`).classList.add('active');
+        
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        document.getElementById(`section-${tab}`).classList.add('active');
+    }
+
+    function renderAllGrids() {
+        const attGrid = document.getElementById('attendance-grid');
+        const expGrid = document.getElementById('explore-grid');
+        
+        const html = allStudents.map((s, index) => `
+            <div class="student-card" onclick="enterRoom(${s.id})">
+                <h2>${fruits[index % fruits.length]} ${s.name}</h2>
+                <p>LV.${s.lv} | ${s.point}P</p>
+            </div>
+        `).join('');
+
+        attGrid.innerHTML = html;
+        expGrid.innerHTML = html;
+    }
+
+    function enterRoom(id) {
+        selectedStudent = allStudents.find(s => s.id == id);
+        document.querySelectorAll('.content-section').forEach(s => s.classList.remove('active'));
+        const detail = document.getElementById('section-detail');
+        detail.classList.add('active');
+
+        document.getElementById('room-owner').innerText = `🏠 ${selectedStudent.name}의 룸`;
+        document.getElementById('student-info').innerHTML = `
+            <p>⭐ <b>레벨:</b> LV.${selectedStudent.lv}</p>
+            <p>💰 <b>보유 포인트:</b> ${selectedStudent.point}P</p>
+            <p>🎮 <b>마크 좌표:</b> <span style="color:#2e7d32;">${selectedStudent.mcCoords || '미정'}</span></p>
+        `;
+
+        // 구경 모드일 때는 기분 기록과 업로드 버튼을 숨깁니다.
+        const isExplore = (currentTab === 'explore');
+        document.getElementById('mood-record-area').style.display = isExplore ? 'none' : 'block';
+        document.getElementById('upload-btn').style.display = isExplore ? 'none' : 'block';
+    }
+
+    function goBack() { switchTab(currentTab); }
+
     async function sendMood(mood) {
         const today = new Date().toLocaleDateString();
-        const lastDate = localStorage.getItem('lastMoodDate');
-
-        if (lastDate === today) {
-            return alert("기분은 하루에 한 번만 기록할 수 있어! 내일 또 들려줘 😊");
-        }
-
-        alert(currentUser + "야, 기록 중이야. 잠시만 기다려줘!");
-        
+        if (localStorage.getItem('done_' + selectedStudent.name) === today) return alert("이미 기록했어!");
+        alert("기록 중...");
         try {
-            await fetch(API_URL, {
-                method: "POST",
-                body: JSON.stringify({ type: "mood", name: currentUser, mood: mood })
-            });
-            localStorage.setItem('lastMoodDate', today);
-            alert("✅ 오늘 기분 기록 완료! 시트에 저장됐어.");
-        } catch (e) {
-            alert("❌ 전송 실패! 나중에 다시 시도해줘.");
-        }
+            await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: selectedStudent.name, mood: mood }) });
+            localStorage.setItem('done_' + selectedStudent.name, today);
+            alert("✅ 완료!");
+        } catch (e) { alert("실패!"); }
     }
 
-    // 탭 전환 기능
-    function showTab(tabName) {
-        document.getElementById('tab-home').style.display = (tabName === 'home') ? 'block' : 'none';
-        document.getElementById('tab-myroom').style.display = (tabName === 'myroom') ? 'block' : 'none';
-        document.getElementById('nav-home').classList.toggle('active', tabName === 'home');
-        document.getElementById('nav-myroom').classList.toggle('active', tabName === 'myroom');
-        
-        if(tabName === 'myroom') renderMyRoom();
-    }
-
-    // 마이룸 렌더링 (미호야, 너의 데이터를 보여줄게!)
-    function renderMyRoom() {
-        const container = document.getElementById('my-room-content');
-        
-        if (!allStudents.length) {
-            container.innerHTML = `<div class="my-room-card">명단을 불러오는 중입니다...</div>`;
-            return;
-        }
-
-        // [중요] 이름 매칭 시 앞뒤 공백을 제거(.trim())하고 완벽하게 비교합니다.
-        const s = allStudents.find(item => item.name.trim() === currentUser);
-        
-        if (!s) {
-            // 찾지 못했을 때 어떤 이름으로 찾으려고 했는지 보여주면 디버깅이 쉽습니다.
-            container.innerHTML = `
-                <div class="my-room-card">
-                    <h2 style="color:red;">❌ 데이터를 찾을 수 없어요 ㅠㅠ</h2>
-                    <p>학생 명단에 <b>'${currentUser}'</b>(이)라는 이름이 없어요.</p>
-                    <p style="font-size:0.8rem; color:gray;">(구글 시트에 적힌 이름과 똑같이 입력했는지 확인해줘!)</p>
-                    <button onclick="localStorage.removeItem('studentName'); location.reload();" style="margin-top:20px; padding:10px; border-radius:10px; border:none; background:#ffca28; color:white; font-weight:bold; cursor:pointer;">이름 다시 입력하기</button>
-                </div>`;
-            return;
-        }
-
-        // 데이터를 찾았을 때 보여주는 화면
-        container.innerHTML = `
-            <div class="my-room-card">
-                <h2 style="color: #ff8f00; margin-bottom:5px;">🏠 ${s.name}의 룸</h2>
-                <p style="color:gray; margin-bottom:25px;">행복한 성장 기록</p>
-                <div class="info-box">
-                    <p>⭐ <b>레벨:</b> LV.${s.lv}</p>
-                    <p>💰 <b>포인트:</b> ${s.point}P</p>
-                    <p>🎮 <b>마크 좌표:</b> <span style="color:#2e7d32;">${s.mcCoords || '미정'}</span></p>
-                </div>
-                <button onclick="alert('과제 제출 준비 중!')" style="background:#ffca28; border:none; padding:15px; border-radius:15px; color:white; font-weight:bold; cursor:pointer; width:100%; font-size:1.1rem;">🎁 과제 제출하기</button>
-                <button onclick="localStorage.removeItem('studentName'); location.reload();" style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer; font-size:0.9rem;">
-                    다른 이름으로 로그인
-                </button>
-            </div>
-        `;
+    async function uploadFile() {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            try {
+                const res = await fetch(API_URL, { method: "POST", body: JSON.stringify({ base64: base64, mimeType: file.type, fileName: selectedStudent.name + "_" + file.name }) });
+                alert("✅ 전송 성공!");
+            } catch (e) { alert("❌ 실패!"); }
+        };
     }
 </script>
 </body>
