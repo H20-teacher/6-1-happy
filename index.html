@@ -15,10 +15,12 @@
         <div id="student-grid">로딩 중...</div>
     </div>
 
-   <script>
-    const API_URL = "https://script.google.com/macros/s/자신의_GAS_ID/exec";
-    let allStudents = []; // 전체 데이터를 담아둘 변수
+  <script>
+    // 여기에 복사한 주소를 따옴표("") 안에 넣으세요.
+    const API_URL = "https://script.google.com/macros/s/AKfycbwLNJxDMLShsSXledULvzl7lQ8uK98yy70gMgR5wB1CZdnqMaePCPh91iGpWS_l8U0w/exec";
 
+    let allStudents = []; 
+    // ... 나머지 코드 ...
     // 1. 초기 데이터 로드 (6명 리스트 출력)
     async function loadData() {
         const grid = document.getElementById('student-grid');
