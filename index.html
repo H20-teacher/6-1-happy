@@ -58,7 +58,7 @@
     </div>
 
 <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbxS0b-8APk-SmcDHX_6clgqPbAUApceoQ_94wsugjb3cpaFW8FW9T0G2AQHdBLJAxk8/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbzQzDoH1oOmyWxNNECHXqh1TCGCV5aVt4M5jKUOlY7HGl5y9JckQ112JoKqyFfhEn7V/exec";
     let allStudents = []; 
 
     async function loadData() {
@@ -79,27 +79,70 @@
         }
     }
 
-    function enterMyRoom(studentId) {
-        const s = allStudents.find(item => item.id == studentId);
-        const content = document.getElementById('app-content');
-        content.innerHTML = `
-            <div class="my-room-card">
-                <h1 style="color: #ff8f00; margin-bottom: 5px; text-shadow:none;">🏠 ${s.name}의 Happy 룸</h1>
-                <p style="color: #888; margin-bottom: 25px;">우리들의 행복한 성장 기록</p>
-                <div class="info-box">
-                    <p>⭐ <b>현재 레벨:</b> LV.${s.lv}</p>
-                    <p>💰 <b>보유 포인트:</b> ${s.point}P</p>
-                    <p>🏃 <b>최근 활동:</b> ${s.lastAction || '기록 없음'}</p>
-                    <p>🎮 <b>마크 좌표:</b> <span style="color: #2e7d32;">${s.mcCoords || '좌표 미정'}</span></p>
-                </div>
-                <div class="btn-group">
-                    <button style="background: #ffca28;" onclick="alert('과제 제출 준비 중!')">🎁 과제 제출</button>
-                    <button style="background: #4fc3f7;" onclick="alert('작품함 준비 중!')">🖼️ 내 작품함</button>
-                </div>
-                <button onclick="location.reload()" style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">← 숲으로 돌아가기</button>
+function enterMyRoom(studentId) {
+    const s = allStudents.find(item => item.id == studentId);
+    const content = document.getElementById('app-content');
+    
+    content.innerHTML = `
+        <div class="my-room-card">
+            <h1 style="color: #ff8f00; margin-bottom: 5px; text-shadow:none;">🏠 ${s.name}의 Happy 룸</h1>
+            <p style="color: #888; margin-bottom: 25px;">우리들의 행복한 성장 기록</p>
+            
+            <div class="info-box">
+                <p>⭐ <b>현재 레벨:</b> LV.${s.lv}</p>
+                <p>💰 <b>보유 포인트:</b> ${s.point}P</p>
+                <p>🏃 <b>최근 활동:</b> ${s.lastAction || '기록 없음'}</p>
+                <p>🎮 <b>마크 좌표:</b> <span style="color: #2e7d32;">${s.mcCoords || '좌표 미정'}</span></p>
             </div>
-        `;
-    }
+
+            <div class="btn-group">
+                <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="uploadFile('${s.name}')">
+                
+                <button style="background: #ffca28;" onclick="document.getElementById('fileInput').click()">🎁 과제 제출</button>
+                <button style="background: #4fc3f7;" onclick="alert('작품함 준비 중!')">🖼️ 내 작품함</button>
+            </div>
+
+            <button onclick="location.reload()" style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">← 숲으로 돌아가기</button>
+        </div>
+    `;
+}
+    
+    // 파일을 서버(GAS)로 전송하는 메인 엔진
+async function uploadFile(studentName) {
+    const fileInput = document.getElementById('fileInput');
+    const file = fileInput.files[0];
+    if (!file) return;
+
+    // 로딩 표시 (아이들이 중복 클릭하지 않게 안내)
+    alert(studentName + " 어린이, 사진을 선생님께 보내고 있어요. 잠시만 기다려요!");
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file); // 파일을 데이터 형태로 읽기
+    reader.onload = async () => {
+        const base64 = reader.result.split(',')[1]; // 순수 파일 데이터만 추출
+        
+        // 전송할 데이터 묶음 만들기
+        const payload = {
+            base64: base64,
+            mimeType: file.type,
+            fileName: studentName + "_" + new Date().getTime() + "_" + file.name,
+            studentName: studentName
+        };
+
+        try {
+            // [중요] 아까 만든 API_URL로 POST 요청을 보냅니다.
+            const response = await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify(payload)
+            });
+            const result = await response.text();
+            alert("✅ 성공: " + result);
+        } catch (e) {
+            console.error("업로드 에러:", e);
+            alert("❌ 전송 실패! 네트워크를 확인하거나 선생님께 말씀드려요.");
+        }
+    };
+}
     window.onload = loadData;
 </script>
 </body>
