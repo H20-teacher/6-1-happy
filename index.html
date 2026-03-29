@@ -26,11 +26,31 @@
         .tab-content { display: none; width: 100%; animation: fadeIn 0.3s ease-out; }
         .active-tab { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* 로그인 화면 스타일 */
+        #login-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; text-align: center;
+        }
     </style>
 </head>
 <body>
 
-    <div class="w-full max-w-[500px] text-center p-5 pb-[100px]">
+    <!-- 로그인 화면 -->
+    <div id="login-screen">
+        <h1 class="text-[#fbc02d] text-3xl font-bold mb-8">🐰 도산 6-1 Happy</h1>
+        <div class="bg-white p-8 rounded-[30px] card-shadow w-full max-w-[350px]">
+            <p class="text-gray-600 mb-4 font-bold">이름을 입력하고 입장하세요!</p>
+            <input type="text" id="login-name" class="w-full p-4 border-2 border-[#ffca28] rounded-xl mb-4 text-center text-lg font-bold outline-none" placeholder="이름 입력">
+            <button onclick="handleLogin()" class="w-full p-4 bg-[#ffca28] text-white font-bold rounded-xl hover:bg-[#fbc02d] transition-colors">입장하기</button>
+            <p id="login-error" class="text-red-500 mt-4 text-sm font-bold hidden">명단에 없는 이름입니다!</p>
+        </div>
+    </div>
+
+    <!-- 메인 앱 컨텐츠 -->
+    <div id="main-app" class="w-full max-w-[500px] text-center p-5 pb-[100px] hidden">
         <h1 class="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">
             🐰 도산 6-1 Happy &gt;.&lt;
         </h1>
@@ -91,7 +111,7 @@
     </div>
 
     <!-- 하단 네비게이션 -->
-    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
+    <div id="nav-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000] hidden">
         <button id="nav-home" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-[#fbc02d]" onclick="showTab('home')">
             <i data-lucide="home"></i><span>홈</span>
         </button>
@@ -106,11 +126,12 @@
     <script>
         // [확인] 선생님의 구글 앱스 스크립트 API 주소를 꼭 넣어주세요!
         const API_URL = "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec";
-        let currentUser = localStorage.getItem('studentName') || "미호";
+        
+        // sessionStorage를 사용하여 창을 닫으면 로그아웃되게 함
+        let currentUser = sessionStorage.getItem('studentName'); 
         let allStudents = [];
         let lessons = [];
 
-        // 초기화
         window.onload = () => {
             updateDate();
             loadData();
@@ -137,8 +158,33 @@
                     allStudents = result.students || [];
                     lessons = result.lessons || [];
                 }
-                renderAll();
+                
+                // 이미 로그인 정보가 있다면 바로 앱 보여주기
+                if (currentUser && allStudents.some(s => s.name === currentUser)) {
+                    showApp();
+                }
             } catch (e) { console.error(e); }
+        }
+
+        // 로그인 처리
+        function handleLogin() {
+            const inputName = document.getElementById('login-name').value.trim();
+            const student = allStudents.find(s => s.name === inputName);
+            
+            if (student) {
+                currentUser = inputName;
+                sessionStorage.setItem('studentName', currentUser);
+                showApp();
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        }
+
+        function showApp() {
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-app').classList.remove('hidden');
+            document.getElementById('nav-bar').classList.remove('hidden');
+            renderAll();
         }
 
         function renderAll() {
@@ -162,7 +208,7 @@
                 document.getElementById('my-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${me.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${me.point}P</p><p>🎮 <b>마크 좌표:</b> ${me.mcCoords || '미정'}</p>`;
             }
 
-            // 친구들 목록
+            // 친구들 목록 (나 제외)
             const grid = document.getElementById('friends-grid');
             grid.innerHTML = allStudents.filter(s => s.name !== currentUser).map(s => `
                 <div class="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onclick="viewFriend('${s.name}')">
@@ -179,7 +225,7 @@
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
             document.getElementById('tab-' + tabName).classList.add('active-tab');
             
-            document.querySelectorAll('.fixed button').forEach(b => b.classList.replace('text-[#fbc02d]', 'text-gray-400'));
+            document.querySelectorAll('#nav-bar button').forEach(b => b.classList.replace('text-[#fbc02d]', 'text-gray-400'));
             document.getElementById('nav-' + tabName).classList.replace('text-gray-400', 'text-[#fbc02d]');
             
             if(tabName === 'explore') closeFriendRoom();
