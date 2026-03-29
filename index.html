@@ -15,45 +15,48 @@
             min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
         }
-        .container { width: 100%; max-width: 500px; text-align: center; padding: 20px; padding-bottom: 80px; }
+        .container { width: 100%; max-width: 500px; text-align: center; padding: 20px; padding-bottom: 100px; }
         
-        /* 상단 헤더 및 날짜 */
+        /* 상단 헤더 및 실시간 날짜 */
         h1 { color: #fbc02d; margin-bottom: 5px; text-shadow: 1px 1px 2px white; margin-top: 20px; }
-        #today-date { font-size: 1.1rem; color: #555; font-weight: bold; margin-bottom: 25px; }
+        #today-date { font-size: 1.1rem; color: #444; font-weight: bold; margin-bottom: 25px; background: rgba(255,255,255,0.6); padding: 5px 15px; border-radius: 50px; display: inline-block; }
 
         /* 탭 컨텐츠 관리 */
-        .tab-content { display: none; width: 100%; }
+        .tab-content { display: none; width: 100%; animation: fadeIn 0.3s; }
         .active-tab { display: block; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* 오늘의 기분 섹션 */
-        .mood-section { background: rgba(255, 255, 255, 0.85); padding: 15px; border-radius: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .mood-buttons { display: flex; justify-content: space-around; margin-top: 10px; }
-        .mood-btn { font-size: 2rem; cursor: pointer; transition: 0.2s; border: none; background: none; }
+        /* 오늘의 기분/학습 문제 */
+        .mood-section, .lesson-box { 
+            background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 25px; 
+            margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+        }
+        .mood-buttons { display: flex; justify-content: space-around; margin-top: 15px; }
+        .mood-btn { font-size: 2.2rem; cursor: pointer; transition: 0.2s; border: none; background: none; }
         .mood-btn:hover { transform: scale(1.2); }
 
-        /* 학습 문제 섹션 */
-        .lesson-box { background: white; padding: 20px; border-radius: 20px; border-left: 8px solid #fbc02d; text-align: left; margin-bottom: 20px; }
-
-        /* 학생 그리드 (마이룸 탭으로 이동) */
+        /* 학생 그리드 */
         #student-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .student-card {
-            border: 2px solid #ffca28; padding: 15px; border-radius: 20px; cursor: pointer; 
-            background: rgba(255, 255, 255, 0.9); transition: 0.3s;
+            border: 2px solid #ffca28; padding: 20px; border-radius: 20px; cursor: pointer; 
+            background: rgba(255, 255, 255, 0.9); transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }
-        .student-card:hover { background: white; }
+        .student-card:hover { transform: translateY(-3px); background: white; }
+        .student-card h2 { margin: 0; font-size: 1.1rem; color: #ff8f00; }
 
         /* 하단 내비게이션 바 */
         .nav-bar {
             position: fixed; bottom: 0; width: 100%; max-width: 500px;
             background: white; display: flex; justify-content: space-around;
-            padding: 10px 0; border-top: 1px solid #ddd; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            padding: 12px 0; border-top: 2px solid #fbc02d; box-shadow: 0 -5px 15px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
-        .nav-item { cursor: pointer; text-align: center; color: #888; flex: 1; font-size: 0.8rem; }
-        .nav-item.active { color: #fbc02d; font-weight: bold; }
-        .nav-item i { font-size: 1.5rem; display: block; margin-bottom: 2px; }
+        .nav-item { cursor: pointer; text-align: center; color: #bbb; flex: 1; font-weight: bold; }
+        .nav-item.active { color: #fbc02d; }
+        .nav-item span { display: block; font-size: 0.9rem; margin-top: 3px; }
 
         /* 마이룸 상세 카드 */
-        .my-room-card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .my-room-card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; }
         .info-box { background: #fff9c4; padding: 20px; border-radius: 20px; border: 2px dashed #ffca28; margin-bottom: 20px; text-align: left; }
         .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
         .btn-group button { padding: 15px; border-radius: 15px; border: none; color: white; font-weight: bold; cursor: pointer; }
@@ -63,11 +66,11 @@
 
     <div class="container">
         <h1>🌻 6-1 Happy 숲</h1>
-        <div id="today-date">0000년 00월 00일 (요일)</div>
+        <div id="today-date">날짜를 계산 중...</div>
 
         <div id="tab-home" class="tab-content active-tab">
             <div class="mood-section">
-                <p style="margin:0; font-weight:bold; color:#ff8f00;">😊 오늘의 내 기분은?</p>
+                <p style="margin:0; font-weight:bold; color:#ff8f00;">🌈 오늘의 내 기분은?</p>
                 <div class="mood-buttons">
                     <button class="mood-btn" onclick="selectMood('최고!')">🤩</button>
                     <button class="mood-btn" onclick="selectMood('좋아요')">😊</button>
@@ -79,7 +82,7 @@
 
             <div class="lesson-box">
                 <h3 style="margin-top:0; color:#fbc02d;">📝 오늘의 학습 문제</h3>
-                <p id="lesson-text">데이터를 불러오는 중...</p>
+                <p id="lesson-text" style="font-weight: 500; line-height: 1.6;">과연 오늘 우리는 어떤 재미있는 것을 배울까요? 잠시만 기다려주세요!</p>
             </div>
         </div>
 
@@ -97,59 +100,73 @@
 <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbxQzDoH1oOmyWxNNECHXqh1TCGCV5aVt4M5jKUOlY7HGl5y9JckQ112JoKqyFfhEn7V/exec";
     let allStudents = [];
+    // 과일 아이콘 리스트 (학생마다 랜덤하게 배정)
+    const fruits = ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍑', '🍒', '🥝', '🍍'];
 
-    // 1. 날짜 표시 및 데이터 로드
+    // 1. 날짜 연동 및 초기 실행
     window.onload = function() {
-        const now = new Date();
-        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-        document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', options);
+        updateDate();
         loadData();
     };
 
-    // 2. 탭 전환 기능
+    function updateDate() {
+        const now = new Date();
+        const options = { 
+            year: 'numeric', month: 'long', day: 'numeric', 
+            weekday: 'long'
+        };
+        // 2026년 3월 29일 일요일 형태로 표시
+        document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', options);
+    }
+
+    // 2. 탭 전환 (이동 안 되던 문제 해결)
     function showTab(tabName, element) {
-        document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active-tab'));
+        // 모든 탭 컨텐츠 숨기기
+        document.getElementById('tab-home').classList.remove('active-tab');
+        document.getElementById('tab-myroom').classList.remove('active-tab');
+        
+        // 모든 메뉴 아이콘 비활성화
         document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
         
+        // 선택한 탭 보여주기
         document.getElementById('tab-' + tabName).classList.add('active-tab');
         element.classList.add('active');
 
-        // 상세 화면 열려있을 때 탭 누르면 다시 목록으로
+        // 마이룸 탭으로 올 때 항상 목록이 먼저 보이도록 초기화
         if(tabName === 'myroom') {
             document.getElementById('student-grid').style.display = 'grid';
             document.getElementById('room-detail').style.display = 'none';
         }
     }
 
-    // 3. 스프레드시트 데이터 불러오기
+    // 3. 데이터 로드 및 과일 아이콘 배정
     async function loadData() {
         try {
             const response = await fetch(API_URL);
             const result = await response.json();
             allStudents = result.students;
             
-            // 학습 문제 예시 (시트에 'Lesson' 시트가 따로 없다면 임시 문구)
-            document.getElementById('lesson-text').innerHTML = "오늘은 우리 반 <b>행복한 성장 프로젝트</b>를 시작해 봅시다!";
+            // 학습 문제 예시 (임시)
+            document.getElementById('lesson-text').innerHTML = "오늘은 <b>6-1반 Happy 숲</b> 웹사이트를 함께 탐험해보고, 첫 번째 과제를 제출해봅시다! 🚀";
 
             const grid = document.getElementById('student-grid');
-            grid.innerHTML = allStudents.map(s => `
+            grid.innerHTML = allStudents.map((s, index) => `
                 <div class="student-card" onclick="enterMyRoom(${s.id})">
-                    <h2>👦 ${s.name}</h2>
+                    <h2>${fruits[index % fruits.length]} ${s.name}</h2>
                     <p><b>LV.${s.lv}</b> | ${s.point}P</p>
                 </div>
             `).join('');
         } catch (e) {
-            console.error("데이터 로드 실패:", e);
+            console.error("데이터 실패:", e);
         }
     }
 
-    // 4. 기분 선택 알림
+    // 4. 기분 선택
     function selectMood(mood) {
-        alert("오늘의 기분 '" + mood + "' 선택 완료! 선생님께 전달되었어요.");
-        // (나중에 시트에 기분을 저장하는 기능을 doPost에 추가할 수 있습니다.)
+        alert("오늘의 기분 '" + mood + "' 선택 완료! 즐거운 하루 보내요!");
     }
 
-    // 5. 마이룸 상세 입장
+    // 5. 마이룸 상세 이동 (수정 완료)
     function enterMyRoom(studentId) {
         const s = allStudents.find(item => item.id == studentId);
         const grid = document.getElementById('student-grid');
@@ -157,10 +174,11 @@
         
         grid.style.display = 'none';
         detail.style.display = 'block';
+        
         detail.innerHTML = `
             <div class="my-room-card">
-                <h1 style="color: #ff8f00; margin-bottom: 5px; text-shadow:none;">🏠 ${s.name}의 Happy 룸</h1>
-                <p style="color: #888; margin-bottom: 25px;">우리들의 행복한 성장 기록</p>
+                <h1 style="color: #ff8f00; margin-bottom: 5px; text-shadow:none;">🏠 ${s.name}의 룸</h1>
+                <p style="color: #888; margin-bottom: 25px;">행복한 성장 기록</p>
                 <div class="info-box">
                     <p>⭐ <b>현재 레벨:</b> LV.${s.lv}</p>
                     <p>💰 <b>보유 포인트:</b> ${s.point}P</p>
@@ -170,4 +188,47 @@
                 <div class="btn-group">
                     <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="uploadFile('${s.name}')">
                     <button style="background: #ffca28;" onclick="document.getElementById('fileInput').click()">🎁 과제 제출</button>
-                    <button style="background: #4fc3f7;" onclick="alert('작품함 준비 중!')">🖼️ 내 작품함</button
+                    <button style="background: #4fc3f7;" onclick="alert('작품함 준비 중!')">🖼️ 내 작품함</button>
+                </div>
+                <button onclick="document.getElementById('student-grid').style.display='grid'; document.getElementById('room-detail').style.display='none';" 
+                        style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">
+                    ← 목록으로 돌아가기
+                </button>
+            </div>
+        `;
+    }
+
+    // 6. 업로드 (기존 로직 유지)
+    async function uploadFile(studentName) {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        alert(studentName + " 학생, 사진을 보내고 있어요!");
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            const payload = {
+                base64: base64,
+                mimeType: file.type,
+                fileName: studentName + "_" + new Date().getTime() + "_" + file.name,
+                studentName: studentName
+            };
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: "POST",
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.text();
+                alert("✅ " + result);
+            } catch (e) {
+                alert("❌ 전송 실패!");
+            }
+        };
+    }
+</script>
+</body>
+</html>
