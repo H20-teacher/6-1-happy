@@ -5,15 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐰 도산 6-1 Happy >.<</title>
     
-    <!-- 1. 필수 라이브러리 로드 (안정적인 버전 사용) -->
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS & Lucide Icons -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/lucide-react@latest"></script>
 
-    <!-- 2. 폰트 및 스타일 (선생님 원본 스타일 유지) -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <style>
         body {
@@ -28,201 +23,208 @@
             align-items: center;
         }
         .card-shadow { box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        #root { width: 100%; display: flex; flex-direction: column; align-items: center; }
-        .tab-content { animation: fadeIn 0.3s ease-out; width: 100%; }
+        .tab-content { display: none; width: 100%; animation: fadeIn 0.3s ease-out; }
+        .active-tab { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="root">
-        <!-- 로딩 중 표시 (React가 켜지기 전까지 보임) -->
-        <div style="margin-top: 100px; font-weight: bold; color: #fbc02d; text-shadow: 1px 1px 2px white;">
-            앱을 불러오는 중입니다... 잠시만 기다려 주세요!
+
+    <div class="w-full max-w-[500px] text-center p-5 pb-[100px]">
+        <h1 class="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">
+            🐰 도산 6-1 Happy &gt;.&lt;
+        </h1>
+
+        <!-- 홈 탭 -->
+        <div id="tab-home" class="tab-content active-tab">
+            <div id="today-date" class="font-bold mb-4">날짜 불러오는 중...</div>
+            <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                <p class="font-bold text-[#ff8f00]">🌈 지금 나의 기분은?</p>
+                <div class="flex justify-around mt-4">
+                    <button class="text-4xl hover:scale-110 transition-transform" onclick="sendMood('최고!')">🤩</button>
+                    <button class="text-4xl hover:scale-110 transition-transform" onclick="sendMood('좋아요')">😊</button>
+                    <button class="text-4xl hover:scale-110 transition-transform" onclick="sendMood('평범해요')">😐</button>
+                    <button class="text-4xl hover:scale-110 transition-transform" onclick="sendMood('속상해요')">😢</button>
+                    <button class="text-4xl hover:scale-110 transition-transform" onclick="sendMood('화나요')">😡</button>
+                </div>
+            </div>
+            <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow text-left">
+                <h3 class="text-[#fbc02d] font-bold text-lg mb-2">📝 오늘의 학습 문제</h3>
+                <div id="lesson-content">
+                    <p class="text-gray-500 italic">학습 문제를 불러오는 중입니다...</p>
+                </div>
+            </div>
         </div>
+
+        <!-- 나의 방 탭 -->
+        <div id="tab-myroom" class="tab-content">
+            <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
+                <h2 id="my-room-title" class="text-[#ff8f00] text-xl font-bold mb-4">🏠 나의 마이룸</h2>
+                <div id="my-stats" class="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
+                    데이터를 불러오는 중...
+                </div>
+                <input type="file" id="fileInput" class="hidden" accept="image/*" onchange="uploadFile()">
+                <button class="w-full p-4 rounded-xl bg-[#ffca28] text-white font-bold" onclick="document.getElementById('fileInput').click()">🎁 개인 과제 제출하기</button>
+            </div>
+        </div>
+
+        <!-- 친구들 탭 -->
+        <div id="tab-explore" class="tab-content">
+            <div id="explore-list">
+                <p class="font-bold mb-4">🌳 우리 반 친구들 둘러보기</p>
+                <div id="friends-grid" class="grid grid-cols-2 gap-3"></div>
+            </div>
+            <div id="friend-detail" class="hidden">
+                <div class="bg-white/90 p-5 rounded-[25px] card-shadow">
+                    <h2 id="friend-name" class="text-[#ff8f00] text-xl font-bold mb-4"></h2>
+                    <div id="friend-stats" class="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left"></div>
+                    <button class="w-full p-4 rounded-xl bg-gray-200 text-gray-600 font-bold flex items-center justify-center gap-2" onclick="closeFriendRoom()">
+                        <i data-lucide="chevron-left"></i> 뒤로 가기
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <p class="text-[0.7rem] text-gray-500 mt-8 leading-relaxed px-4">
+            본 플랫폼에 사용된 시각 자료는 스튜디오 지브리(Studio Ghibli)에서 공식적으로 허용한 '상식적인 범위 내의 교육적 활용' 가이드라인을 준수하며, 출처를 명확히 표기함.
+        </p>
     </div>
 
-    <script type="text/babel">
-        // 라이브러리 안전하게 가져오기
-        const { useState, useEffect, useRef } = React;
-        const { Home, User, Users, ChevronLeft, ExternalLink } = LucideReact;
+    <!-- 하단 네비게이션 -->
+    <div class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
+        <button id="nav-home" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-[#fbc02d]" onclick="showTab('home')">
+            <i data-lucide="home"></i><span>홈</span>
+        </button>
+        <button id="nav-myroom" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-gray-400" onclick="showTab('myroom')">
+            <i data-lucide="user"></i><span>나의 방</span>
+        </button>
+        <button id="nav-explore" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-gray-400" onclick="showTab('explore')">
+            <i data-lucide="users"></i><span>친구들</span>
+        </button>
+    </div>
 
+    <script>
         // [확인] 선생님의 구글 앱스 스크립트 API 주소를 꼭 넣어주세요!
         const API_URL = "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec";
+        let currentUser = localStorage.getItem('studentName') || "미호";
+        let allStudents = [];
+        let lessons = [];
 
-        function App() {
-            const [activeTab, setActiveTab] = useState('home');
-            const [currentUser, setCurrentUser] = useState(localStorage.getItem('studentName') || "미호");
-            const [allStudents, setAllStudents] = useState([]);
-            const [lessons, setLessons] = useState([]);
-            const [selectedFriend, setSelectedFriend] = useState(null);
-            const [loading, setLoading] = useState(true);
-            const fileInputRef = useRef(null);
+        // 초기화
+        window.onload = () => {
+            updateDate();
+            loadData();
+            lucide.createIcons();
+        };
 
-            useEffect(() => { loadData(); }, []);
-
-            const loadData = async () => {
-                try {
-                    if (API_URL === "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
-                        setAllStudents([
-                            { name: "미호", lv: 5, point: 1200, mcCoords: "100, 64, -200" },
-                            { name: "준호", lv: 3, point: 800, mcCoords: "50, 70, 150" },
-                            { name: "서연", lv: 7, point: 2500, mcCoords: "-300, 65, 400" }
-                        ]);
-                        setLessons([{ 
-                            date: new Date().toISOString().split('T')[0], 
-                            content: "오늘은 분수의 덧셈을 배워봅시다.", 
-                            link: "https://www.youtube.com" 
-                        }]);
-                    } else {
-                        const response = await fetch(API_URL);
-                        const result = await response.json();
-                        setAllStudents(result.students || []);
-                        setLessons(result.lessons || []);
-                    }
-                } catch (e) { console.error("데이터 로드 실패", e); }
-                finally { setLoading(false); }
-            };
-
-            const getTodayLesson = () => {
-                const today = new Date().toISOString().split('T')[0];
-                return lessons.find(l => l.date === today);
-            };
-
-            const updateDate = () => new Date().toLocaleDateString('ko-KR', { 
-                year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' 
-            });
-
-            const sendMood = async (mood) => {
-                const today = new Date().toLocaleDateString();
-                if (localStorage.getItem('done_' + currentUser) === today) return alert("이미 오늘 기분을 기록했어!");
-                try {
-                    if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
-                        await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: currentUser, mood }) });
-                    }
-                    localStorage.setItem('done_' + currentUser, today);
-                    alert(`✅ 기분 저장 완료!`);
-                } catch (e) { alert("저장 실패"); }
-            };
-
-            const uploadFile = async () => {
-                const file = fileInputRef.current.files[0];
-                if (!file) return;
-                const reader = new FileReader();
-                reader.readAsDataURL(file);
-                reader.onload = async () => {
-                    const base64 = reader.result.split(',')[1];
-                    try {
-                        if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
-                            await fetch(API_URL, { method: "POST", body: JSON.stringify({ base64, mimeType: file.type, fileName: currentUser + "_" + file.name }) });
-                        }
-                        alert("✅ 과제 제출 성공!");
-                    } catch (e) { alert("제출 실패"); }
-                };
-            };
-
-            const me = allStudents.find(s => s.name === currentUser);
-
-            return (
-                <div className="w-full max-w-[500px] text-center p-5 pb-[100px] animate-fade-in">
-                    <h1 className="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">
-                        🐰 도산 6-1 Happy &gt;.&lt;
-                    </h1>
-
-                    <div className="tab-content">
-                        {activeTab === 'home' && (
-                            <div>
-                                <div className="font-bold mb-4">{updateDate()}</div>
-                                <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
-                                    <p className="font-bold text-[#ff8f00]">🌈 지금 나의 기분은?</p>
-                                    <div className="flex justify-around mt-4">
-                                        {['🤩', '😊', '😐', '😢', '😡'].map((emoji, i) => (
-                                            <button key={i} className="text-4xl hover:scale-110 transition-transform" onClick={() => sendMood(emoji)}>{emoji}</button>
-                                        ))}
-                                    </div>
-                                </div>
-                                <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow text-left">
-                                    <h3 className="text-[#fbc02d] font-bold text-lg mb-2">📝 오늘의 학습 문제</h3>
-                                    {getTodayLesson() ? (
-                                        <>
-                                            <p className="text-gray-700 whitespace-pre-wrap">{getTodayLesson().content}</p>
-                                            {getTodayLesson().link && (
-                                                <a href={getTodayLesson().link} target="_blank" className="inline-flex items-center gap-1 mt-3 text-[#ff8f00] font-bold hover:underline">
-                                                    <ExternalLink size={16} /> 학습 링크 바로가기
-                                                </a>
-                                            )}
-                                        </>
-                                    ) : <p className="text-gray-500 italic">오늘은 등록된 학습 문제가 없습니다.</p>}
-                                </div>
-                            </div>
-                        )}
-
-                        {activeTab === 'myroom' && (
-                            <div className="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
-                                <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {me ? me.name : '나'}의 마이룸</h2>
-                                <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
-                                    {me ? (
-                                        <>
-                                            <p className="mb-2">⭐ <b>레벨:</b> LV.{me.lv}</p>
-                                            <p className="mb-2">💰 <b>포인트:</b> {me.point}P</p>
-                                            <p>🎮 <b>마크 좌표:</b> {me.mcCoords || '미정'}</p>
-                                        </>
-                                    ) : <p>데이터를 불러오는 중...</p>}
-                                </div>
-                                <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={uploadFile} />
-                                <button className="w-full p-4 rounded-xl bg-[#ffca28] text-white font-bold" onClick={() => fileInputRef.current.click()}>🎁 개인 과제 제출하기</button>
-                            </div>
-                        )}
-
-                        {activeTab === 'explore' && (
-                            <div>
-                                {!selectedFriend ? (
-                                    <div className="grid grid-cols-2 gap-3">
-                                        {allStudents.filter(s => s.name !== currentUser).map((s, i) => (
-                                            <div key={i} className="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onClick={() => setSelectedFriend(s)}>
-                                                <div className="text-2xl">🌳</div>
-                                                <div className="font-bold mt-1">{s.name}</div>
-                                                <div className="text-sm text-gray-400">LV.{s.lv}</div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div className="bg-white/90 p-5 rounded-[25px] card-shadow">
-                                        <h2 className="text-[#ff8f00] text-xl font-bold mb-4">🏠 {selectedFriend.name}의 공간</h2>
-                                        <div className="bg-[#fff9c4] p-5 rounded-[20px] border-2 border-dashed border-[#ffca28] mb-5 text-left">
-                                            <p className="mb-2">⭐ <b>레벨:</b> LV.{selectedFriend.lv}</p>
-                                            <p className="mb-2">💰 <b>포인트:</b> {selectedFriend.point}P</p>
-                                            <p>🎮 <b>마크 좌표:</b> {selectedFriend.mcCoords || '미정'}</p>
-                                        </div>
-                                        <button className="w-full p-4 rounded-xl bg-gray-200 text-gray-600 font-bold flex items-center justify-center gap-2" onClick={() => setSelectedFriend(null)}>
-                                            <ChevronLeft size={18} /> 뒤로 가기
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    <p className="text-[0.7rem] text-gray-500 mt-8 leading-relaxed px-4">
-                        본 플랫폼에 사용된 시각 자료는 스튜디오 지브리(Studio Ghibli)에서 공식적으로 허용한 '상식적인 범위 내의 교육적 활용' 가이드라인을 준수하며, 출처를 명확히 표기함.
-                    </p>
-
-                    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
-                        <button className={`flex-1 flex flex-col items-center gap-1 font-bold text-xs ${activeTab === 'home' ? 'text-[#fbc02d]' : 'text-gray-400'}`} onClick={() => {setActiveTab('home'); setSelectedFriend(null);}}>
-                            <Home size={22} /><span className="mt-1">홈</span>
-                        </button>
-                        <button className={`flex-1 flex flex-col items-center gap-1 font-bold text-xs ${activeTab === 'myroom' ? 'text-[#fbc02d]' : 'text-gray-400'}`} onClick={() => {setActiveTab('myroom'); setSelectedFriend(null);}}>
-                            <User size={22} /><span className="mt-1">나의 방</span>
-                        </button>
-                        <button className={`flex-1 flex flex-col items-center gap-1 font-bold text-xs ${activeTab === 'explore' ? 'text-[#fbc02d]' : 'text-gray-400'}`} onClick={() => {setActiveTab('explore'); setSelectedFriend(null);}}>
-                            <Users size={22} /><span className="mt-1">친구들</span>
-                        </button>
-                    </div>
-                </div>
-            );
+        function updateDate() {
+            const now = new Date();
+            document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
         }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        async function loadData() {
+            try {
+                if (API_URL === "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
+                    allStudents = [
+                        { name: "미호", lv: 5, point: 1200, mcCoords: "100, 64, -200" },
+                        { name: "준호", lv: 3, point: 800, mcCoords: "50, 70, 150" },
+                        { name: "서연", lv: 7, point: 2500, mcCoords: "-300, 65, 400" }
+                    ];
+                    lessons = [{ date: new Date().toISOString().split('T')[0], content: "오늘은 분수의 덧셈을 배워봅시다.", link: "https://www.youtube.com" }];
+                } else {
+                    const response = await fetch(API_URL);
+                    const result = await response.json();
+                    allStudents = result.students || [];
+                    lessons = result.lessons || [];
+                }
+                renderAll();
+            } catch (e) { console.error(e); }
+        }
+
+        function renderAll() {
+            // 학습 문제
+            const today = new Date().toISOString().split('T')[0];
+            const lesson = lessons.find(l => l.date === today);
+            const lessonDiv = document.getElementById('lesson-content');
+            if (lesson) {
+                lessonDiv.innerHTML = `<p class="text-gray-700 whitespace-pre-wrap">${lesson.content}</p>`;
+                if (lesson.link) {
+                    lessonDiv.innerHTML += `<a href="${lesson.link}" target="_blank" class="inline-flex items-center gap-1 mt-3 text-[#ff8f00] font-bold hover:underline"><i data-lucide="external-link" size="16"></i> 학습 링크 바로가기</a>`;
+                }
+            } else {
+                lessonDiv.innerHTML = `<p class="text-gray-500 italic">오늘은 등록된 학습 문제가 없습니다.</p>`;
+            }
+
+            // 나의 방
+            const me = allStudents.find(s => s.name === currentUser);
+            if (me) {
+                document.getElementById('my-room-title').innerText = `🏠 ${me.name}의 마이룸`;
+                document.getElementById('my-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${me.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${me.point}P</p><p>🎮 <b>마크 좌표:</b> ${me.mcCoords || '미정'}</p>`;
+            }
+
+            // 친구들 목록
+            const grid = document.getElementById('friends-grid');
+            grid.innerHTML = allStudents.filter(s => s.name !== currentUser).map(s => `
+                <div class="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onclick="viewFriend('${s.name}')">
+                    <div class="text-2xl">🌳</div>
+                    <div class="font-bold mt-1">${s.name}</div>
+                    <div class="text-sm text-gray-400">LV.${s.lv}</div>
+                </div>
+            `).join('');
+            
+            lucide.createIcons();
+        }
+
+        function showTab(tabName) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
+            document.getElementById('tab-' + tabName).classList.add('active-tab');
+            
+            document.querySelectorAll('.fixed button').forEach(b => b.classList.replace('text-[#fbc02d]', 'text-gray-400'));
+            document.getElementById('nav-' + tabName).classList.replace('text-gray-400', 'text-[#fbc02d]');
+            
+            if(tabName === 'explore') closeFriendRoom();
+        }
+
+        function viewFriend(name) {
+            const friend = allStudents.find(s => s.name === name);
+            document.getElementById('explore-list').classList.add('hidden');
+            document.getElementById('friend-detail').classList.remove('hidden');
+            document.getElementById('friend-name').innerText = `🏠 ${friend.name}의 공간`;
+            document.getElementById('friend-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${friend.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${friend.point}P</p><p>🎮 <b>마크 좌표:</b> ${friend.mcCoords || '미정'}</p>`;
+        }
+
+        function closeFriendRoom() {
+            document.getElementById('explore-list').classList.remove('hidden');
+            document.getElementById('friend-detail').classList.add('hidden');
+        }
+
+        async function sendMood(mood) {
+            const today = new Date().toLocaleDateString();
+            if (localStorage.getItem('done_' + currentUser) === today) return alert("이미 오늘 기분을 기록했어!");
+            try {
+                if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
+                    await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: currentUser, mood }) });
+                }
+                localStorage.setItem('done_' + currentUser, today);
+                alert(`✅ 기분 저장 완료!`);
+            } catch (e) { alert("저장 실패"); }
+        }
+
+        async function uploadFile() {
+            const file = document.getElementById('fileInput').files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                try {
+                    if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
+                        await fetch(API_URL, { method: "POST", body: JSON.stringify({ base64, mimeType: file.type, fileName: currentUser + "_" + file.name }) });
+                    }
+                    alert("✅ 과제 제출 성공!");
+                } catch (e) { alert("제출 실패"); }
+            };
+        }
     </script>
 </body>
 </html>
