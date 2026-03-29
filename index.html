@@ -78,7 +78,7 @@
             </div>
         </div>
 
-        <!-- 하단 네비게이션 (ID 추가 및 초기 숨김) -->
+        <!-- 하단 네비게이션 바 -->
         <div id="nav-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000] hidden">
             <button id="nav-home" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-[#fbc02d]" onclick="showTab('home')"><i data-lucide="home"></i><span>홈</span></button>
             <button id="nav-myroom" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-gray-400" onclick="showTab('myroom')"><i data-lucide="user"></i><span>나의 방</span></button>
@@ -109,9 +109,10 @@
                 status.classList.add('hidden');
                 document.getElementById('login-controls').classList.remove('hidden');
                 
-                // 세션에 이름이 있고 명단에 있으면 자동 입장
+                // 자동 로그인 시에도 정규화 적용
                 if (currentUser) {
-                    const found = allStudents.find(s => s.name.replace(/\s/g, "") === currentUser.replace(/\s/g, ""));
+                    const cleanCurrent = currentUser.normalize("NFC").replace(/\s/g, "");
+                    const found = allStudents.find(s => s.name.toString().normalize("NFC").replace(/\s/g, "") === cleanCurrent);
                     if (found) showApp();
                 }
             } catch (e) {
@@ -125,22 +126,22 @@
             
             if (!inputName) return alert("이름을 입력해 주세요!");
 
-            // 모든 공백을 제거하고 비교하는 강력한 로직
+            // [핵심] 모든 공백 제거 + 유니코드 정규화 (NFC)
+            const cleanInput = inputName.normalize("NFC").replace(/\s/g, "");
+
             const student = allStudents.find(s => {
-                const cleanSheetName = s.name.toString().replace(/\s/g, "");
-                const cleanInputName = inputName.replace(/\s/g, "");
-                return cleanSheetName === cleanInputName;
+                if (!s || !s.name) return false;
+                // 시트의 이름도 정규화하여 비교
+                const cleanSheetName = s.name.toString().normalize("NFC").replace(/\s/g, "");
+                return cleanSheetName === cleanInput;
             });
 
             if (student) {
-                currentUser = student.name; // 시트에 저장된 정확한 이름 사용
+                currentUser = student.name;
                 sessionStorage.setItem('studentName', currentUser);
                 showApp();
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
-                // 디버깅을 위해 콘솔에 출력 (F12 눌러서 확인 가능)
-                console.log("입력값:", inputName);
-                console.log("명단:", allStudents.map(s => s.name));
             }
         }
 
@@ -168,14 +169,15 @@
                 lessonDiv.innerHTML = `<p class="text-gray-500 italic">학습 문제가 없습니다.</p>`;
             }
 
-            const me = allStudents.find(s => s.name.replace(/\s/g, "") === currentUser.replace(/\s/g, ""));
+            const cleanCurrent = currentUser.normalize("NFC").replace(/\s/g, "");
+            const me = allStudents.find(s => s.name.toString().normalize("NFC").replace(/\s/g, "") === cleanCurrent);
             if (me) {
                 document.getElementById('my-room-title').innerText = `🏠 ${me.name}의 마이룸`;
                 document.getElementById('my-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${me.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${me.point}P</p><p>🎮 <b>마크 좌표:</b> ${me.mcCoords || '미정'}</p>`;
             }
 
             const grid = document.getElementById('friends-grid');
-            grid.innerHTML = allStudents.filter(s => s.name.replace(/\s/g, "") !== currentUser.replace(/\s/g, "")).map(s => `
+            grid.innerHTML = allStudents.filter(s => s.name.toString().normalize("NFC").replace(/\s/g, "") !== cleanCurrent).map(s => `
                 <div class="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onclick="viewFriend('${s.name}')">
                     <div class="text-2xl">🌳</div><div class="font-bold mt-1">${s.name}</div><div class="text-sm text-gray-400">LV.${s.lv}</div>
                 </div>
