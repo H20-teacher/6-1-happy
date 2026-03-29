@@ -22,7 +22,8 @@
     <div id="login-screen">
         <h1 class="text-[#fbc02d] text-3xl font-bold mb-8">🐰 도산 6-1 Happy</h1>
         <div id="login-box" class="bg-white p-8 rounded-[30px] card-shadow w-full max-w-[350px]">
-            <div id="loading-status" class="mb-4 text-blue-500 font-bold animate-pulse">📡 서버에서 명단을 불러오는 중...</div>
+            <div id="loading-status" class="mb-4 text-blue-500 font-bold animate-pulse">📡 서버 연결 중...</div>
+            
             <div id="login-controls" class="hidden">
                 <p class="text-gray-600 mb-4 font-bold">이름을 입력하고 입장하세요!</p>
                 <input type="text" id="login-name" class="w-full p-4 border-2 border-[#ffca28] rounded-xl mb-4 text-center text-lg font-bold outline-none" placeholder="이름 입력" onkeypress="if(event.keyCode==13) handleLogin()">
@@ -78,7 +79,6 @@
             </div>
         </div>
 
-        <!-- 하단 네비게이션 바 -->
         <div id="nav-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000] hidden">
             <button id="nav-home" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-[#fbc02d]" onclick="showTab('home')"><i data-lucide="home"></i><span>홈</span></button>
             <button id="nav-myroom" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-gray-400" onclick="showTab('myroom')"><i data-lucide="user"></i><span>나의 방</span></button>
@@ -90,48 +90,65 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec";
         
         let currentUser = sessionStorage.getItem('studentName'); 
-        let allStudents = [];
-        let lessons = [];
+        let allStudents = JSON.parse(localStorage.getItem('cachedStudents')) || [];
+        let lessons = JSON.parse(localStorage.getItem('cachedLessons')) || [];
 
         window.onload = () => {
             const now = new Date();
             if(document.getElementById('today-date')) document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
-            loadData();
-        };
-
-        async function loadData() {
-            const status = document.getElementById('loading-status');
-            try {
-                const response = await fetch(API_URL);
-                const result = await response.json();
-                allStudents = result.students || [];
-                lessons = result.lessons || [];
-                status.classList.add('hidden');
+            
+            // 캐시된 데이터가 있으면 즉시 로그인 화면 표시
+            if (allStudents.length > 0) {
+                document.getElementById('loading-status').classList.add('hidden');
                 document.getElementById('login-controls').classList.remove('hidden');
-                
-                // 자동 로그인 시에도 정규화 적용
                 if (currentUser) {
                     const cleanCurrent = currentUser.normalize("NFC").replace(/\s/g, "");
                     const found = allStudents.find(s => s.name.toString().normalize("NFC").replace(/\s/g, "") === cleanCurrent);
                     if (found) showApp();
                 }
+            }
+            
+            loadData(); // 백그라운드에서 최신 데이터 가져오기
+        };
+
+        async function loadData() {
+            try {
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.students) {
+                    allStudents = result.students;
+                    lessons = result.lessons || [];
+                    
+                    // 데이터 캐싱
+                    localStorage.setItem('cachedStudents', JSON.stringify(allStudents));
+                    localStorage.setItem('cachedLessons', JSON.stringify(lessons));
+
+                    // 로딩 중이었다면 화면 전환
+                    document.getElementById('loading-status').classList.add('hidden');
+                    document.getElementById('login-controls').classList.remove('hidden');
+                    
+                    // 로그인 상태라면 데이터 갱신
+                    if (document.getElementById('main-app').classList.contains('active-tab') || currentUser) {
+                        renderAll();
+                    }
+                }
             } catch (e) {
-                status.innerHTML = `<span class="text-red-500">❌ 서버 연결 실패!</span>`;
+                console.error("데이터 로드 실패", e);
+                if (allStudents.length === 0) {
+                    document.getElementById('loading-status').innerHTML = `<span class="text-red-500">❌ 연결 실패 (새로고침 해주세요)</span>`;
+                }
             }
         }
 
         function handleLogin() {
             const inputField = document.getElementById('login-name');
             const inputName = inputField.value.trim();
-            
             if (!inputName) return alert("이름을 입력해 주세요!");
 
-            // [핵심] 모든 공백 제거 + 유니코드 정규화 (NFC)
             const cleanInput = inputName.normalize("NFC").replace(/\s/g, "");
-
             const student = allStudents.find(s => {
                 if (!s || !s.name) return false;
-                // 시트의 이름도 정규화하여 비교
                 const cleanSheetName = s.name.toString().normalize("NFC").replace(/\s/g, "");
                 return cleanSheetName === cleanInput;
             });
