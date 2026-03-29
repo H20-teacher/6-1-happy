@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐰 도산 6-1 Happy >.<</title>
     
-    <!-- 1. 외부 라이브러리 로드 (React, Tailwind, Icons, Motion) -->
+    <!-- 라이브러리 로드 -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -14,14 +14,13 @@
     <script src="https://unpkg.com/lucide-react@latest"></script>
     <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
 
-    <!-- 2. 폰트 및 커스텀 스타일 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <style>
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
+            /* 선생님의 원본 배경 설정 적용 */
             background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
-                        url('https://picsum.photos/seed/ghibli/1920/1080?blur=2') no-repeat center center fixed;
+                        url('./bd.jpg') no-repeat center center fixed;
             background-size: cover;
             min-height: 100vh;
             font-family: "Pretendard", sans-serif;
@@ -51,14 +50,11 @@
             const [loading, setLoading] = useState(true);
             const fileInputRef = useRef(null);
 
-            useEffect(() => {
-                loadData();
-            }, []);
+            useEffect(() => { loadData(); }, []);
 
             const loadData = async () => {
                 try {
                     if (API_URL === "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
-                        // 테스트용 데이터
                         setAllStudents([
                             { name: "미호", lv: 5, point: 1200, mcCoords: "100, 64, -200" },
                             { name: "준호", lv: 3, point: 800, mcCoords: "50, 70, 150" },
@@ -75,7 +71,7 @@
                         setAllStudents(result.students || []);
                         setLessons(result.lessons || []);
                     }
-                } catch (e) { console.error("데이터 로드 실패", e); }
+                } catch (e) { console.error(e); }
                 finally { setLoading(false); }
             };
 
@@ -93,10 +89,10 @@
                 if (localStorage.getItem('done_' + currentUser) === today) return alert("이미 오늘 기분을 기록했어!");
                 try {
                     if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
-                        await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: currentUser, mood: mood }) });
+                        await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: currentUser, mood }) });
                     }
                     localStorage.setItem('done_' + currentUser, today);
-                    alert(`✅ ${currentUser}의 기분 저장 완료!`);
+                    alert(`✅ 기분 저장 완료!`);
                 } catch (e) { alert("저장 실패"); }
             };
 
