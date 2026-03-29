@@ -6,12 +6,12 @@
     <link rel="manifest" href="manifest.json">
     <title>6-1 Happy</title>
     <style>
-       body {
+      body {
     margin: 0; 
     padding: 20px;
-    /* 배경 설정: 주소 뒤에 !important를 붙여서 강제 적용합니다. */
+    /* 외부 주소 대신 파일명 'bg.jpg'를 직접 씁니다. */
     background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
-                url('https://drive.google.com/uc?id=14bqoIAnz5AN3W4TSgvjGIUKI24HlZgl3') no-repeat center center fixed !important;
+                url('bg.jpg') no-repeat center center fixed !important;
     background-size: cover !important;
     font-family: 'Pretendard', sans-serif;
     display: flex; 
@@ -147,12 +147,10 @@ async function uploadFile(studentName) {
 }
     // 페이지 로드 시 배경화면을 강제로 다시 설정합니다.
 document.addEventListener("DOMContentLoaded", function() {
-    // [중요] 주소 형식을 lh3.googleusercontent.com 방식으로 변경했습니다.
-    // 이 방식은 구글 드라이브 보안 검사를 우회하여 이미지를 직접 쏴줍니다.
-    const directUrl = "https://lh3.googleusercontent.com/u/0/d/14bqoIAnz5AN3W4TSgvjGIUKI24HlZgl3";
-    
-    document.body.style.background = `linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('${directUrl}') no-repeat center center fixed`;
+    // 파일명을 직접 호출합니다.
+    document.body.style.backgroundImage = "linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('bg.jpg')";
     document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundAttachment = "fixed";
 });
     window.onload = loadData;
 </script>
