@@ -125,7 +125,7 @@
 
     <script>
         // [확인] 선생님의 구글 앱스 스크립트 API 주소를 꼭 넣어주세요!
-        const API_URL = "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec";
+        const API_URL = "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec";
         
         // sessionStorage를 사용하여 창을 닫으면 로그아웃되게 함
         let currentUser = sessionStorage.getItem('studentName'); 
@@ -145,7 +145,7 @@
 
         async function loadData() {
             try {
-                if (API_URL === "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
+                if (API_URL === "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec") {
                     allStudents = [
                         { name: "미호", lv: 5, point: 1200, mcCoords: "100, 64, -200" },
                         { name: "준호", lv: 3, point: 800, mcCoords: "50, 70, 150" },
@@ -248,7 +248,7 @@
             const today = new Date().toLocaleDateString();
             if (localStorage.getItem('done_' + currentUser) === today) return alert("이미 오늘 기분을 기록했어!");
             try {
-                if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
+                if (API_URL !== "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec") {
                     await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: currentUser, mood }) });
                 }
                 localStorage.setItem('done_' + currentUser, today);
@@ -264,7 +264,7 @@
             reader.onload = async () => {
                 const base64 = reader.result.split(',')[1];
                 try {
-                    if (API_URL !== "https://script.google.com/macros/s/AKfycbxnQpYOy3eqFtPNM1B1TaLcf0U6fEqrPi3CH6DSUEv4fAy4_lSr0wamesaVMcQ74KYG/exec") {
+                    if (API_URL !== "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec") {
                         await fetch(API_URL, { method: "POST", body: JSON.stringify({ base64, mimeType: file.type, fileName: currentUser + "_" + file.name }) });
                     }
                     alert("✅ 과제 제출 성공!");
