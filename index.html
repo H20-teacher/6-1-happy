@@ -3,66 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="manifest" href="manifest.json">
-    <title>도산 6-1 Happy >.<</title>
+    <title>🐰 도산 6-1 Happy >.<</title>
     <style>
-        body {
-            margin: 0; padding: 0;
-            background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
-                        url('./bd.jpg') no-repeat center center fixed !important;
-            background-size: cover !important;
-            font-family: 'Pretendard', sans-serif;
-            min-height: 100vh;
-            display: flex; flex-direction: column; align-items: center;
-        }
+        /* 기존 스타일 유지 및 로그인 UI 추가 */
+        body { margin: 0; padding: 0; background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('./bd.jpg') no-repeat center center fixed; background-size: cover; font-family: 'Pretendard', sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
         .container { width: 100%; max-width: 500px; text-align: center; padding: 20px; padding-bottom: 100px; }
-        h1 { color: #fbc02d; margin-bottom: 5px; text-shadow: 1px 1px 2px white; margin-top: 20px; font-size: 1.8rem; }
-        #today-date { font-size: 1rem; color: #444; font-weight: bold; margin-bottom: 25px; background: rgba(255,255,255,0.7); padding: 6px 18px; border-radius: 50px; display: inline-block; }
-        .tab-content { display: none; width: 100%; }
-        .active-tab { display: block; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h1 { color: #fbc02d; text-shadow: 1px 1px 2px white; margin-top: 20px; }
+        
+        /* 로그인 오버레이 */
+        #login-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        #login-overlay input { padding: 15px; border-radius: 15px; border: 2px solid #fbc02d; font-size: 1.1rem; width: 200px; text-align: center; margin-bottom: 10px; }
+        #login-overlay button { padding: 12px 30px; border-radius: 15px; border: none; background: #fbc02d; color: white; font-weight: bold; cursor: pointer; }
+
         .mood-section, .lesson-box { background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 25px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         .mood-buttons { display: flex; justify-content: space-around; margin-top: 15px; }
         .mood-btn { font-size: 2.2rem; cursor: pointer; border: none; background: none; transition: 0.2s; }
-        #student-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .student-card { border: 2px solid #ffca28; padding: 18px; border-radius: 22px; cursor: pointer; background: rgba(255, 255, 255, 0.95); transition: 0.2s; }
-        .student-card h2 { margin: 0; font-size: 1.1rem; color: #ff8f00; }
         .nav-bar { position: fixed; bottom: 0; width: 100%; max-width: 500px; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 2px solid #fbc02d; z-index: 1000; }
         .nav-item { cursor: pointer; text-align: center; color: #bbb; flex: 1; font-weight: bold; }
         .nav-item.active { color: #fbc02d; }
-        .nav-item span { display: block; font-size: 0.9rem; margin-top: 3px; }
         .my-room-card { background: white; padding: 30px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .info-box { background: #fff9c4; padding: 20px; border-radius: 20px; border: 2px dashed #ffca28; margin-bottom: 20px; text-align: left; }
-        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-group button { padding: 15px; border-radius: 15px; border: none; color: white; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>🐰 도산 6-1 Happy >.<</h1>
-        <div id="today-date">날짜를 불러오는 중...</div>
+    <div id="login-overlay" style="display:none;">
+        <h2 style="color:#ff8f00;">🐰 안녕! 너의 이름은?</h2>
+        <input type="text" id="user-name" placeholder="이름을 입력해줘">
+        <button onclick="login()">입장하기</button>
+    </div>
 
-        <div id="tab-home" class="tab-content active-tab">
+    <div class="container" id="main-app">
+        <h1>🐰 도산 6-1 Happy >.<</h1>
+        <div id="today-date" style="font-weight:bold; margin-bottom:20px;"></div>
+
+        <div id="tab-home">
             <div class="mood-section">
-                <p style="margin:0; font-weight:bold; color:#ff8f00;">🌈 오늘의 내 기분은?</p>
+                <p id="welcome-msg" style="margin:0; font-weight:bold; color:#ff8f00;"></p>
                 <div class="mood-buttons">
-                    <button class="mood-btn" onclick="selectMood('최고!')">🤩</button>
-                    <button class="mood-btn" onclick="selectMood('좋아요')">😊</button>
-                    <button class="mood-btn" onclick="selectMood('평범해요')">😐</button>
-                    <button class="mood-btn" onclick="selectMood('속상해요')">😢</button>
-                    <button class="mood-btn" onclick="selectMood('화나요')">😡</button>
+                    <button class="mood-btn" onclick="sendMood('최고!')">🤩</button>
+                    <button class="mood-btn" onclick="sendMood('좋아요')">😊</button>
+                    <button class="mood-btn" onclick="sendMood('평범해요')">😐</button>
+                    <button class="mood-btn" onclick="sendMood('속상해요')">😢</button>
+                    <button class="mood-btn" onclick="sendMood('화나요')">😡</button>
                 </div>
             </div>
             <div class="lesson-box">
-                <h3 style="margin-top:0; color:#fbc02d;">📝 오늘의 학습 문제</h3>
-                <p id="lesson-text">행복한 도산 6-1반! 오늘 하루도 화이팅입니다. 🚀</p>
+                <h3 style="color:#fbc02d;">📝 오늘의 학습 문제</h3>
+                <p>도산 6-1반 친구들, 오늘 하루도 행복하게 보내자!</p>
             </div>
         </div>
 
-        <div id="tab-myroom" class="tab-content">
-            <div id="student-grid">데이터를 불러오는 중...</div>
-            <div id="room-detail" style="display:none;"></div>
+        <div id="tab-myroom" style="display:none;">
+            <div id="my-room-content">데이터를 불러오는 중...</div>
         </div>
     </div>
 
@@ -72,20 +65,57 @@
     </div>
 
 <script>
-    // [확인 필요] 이 주소가 선생님의 구글 앱스 스크립트 배포 주소와 일치해야 합니다!
-    const API_URL = "https://script.google.com/macros/s/AKfycbzQzDoH1oOmyWxNNECHXqh1TCGCV5aVt4M5jKUOlY7HGl5y9JckQ112JoKqyFfhEn7V/exec";
-    let allStudents = [];
-    const fruits = ['🍎', '🍊', '🍋', '🍉', '🍇', '🍓', '🍑', '🍒', '🥝', '🍍'];
+    const API_URL = "https://script.google.com/macros/s/AKfycbyZzkwmxOPs2XX3ANYFfY0pRSLzfBfhM31YA_fe7g6egzZ8D7T9HT6VsWL3RJbuyAuJ/exec";
+    let currentUser = localStorage.getItem('studentName');
 
     document.addEventListener("DOMContentLoaded", function() {
+        if (!currentUser) {
+            document.getElementById('login-overlay').style.display = 'flex';
+        } else {
+            initApp();
+        }
+    });
+
+    function login() {
+        const name = document.getElementById('user-name').value;
+        if (name.trim() === "") return alert("이름을 입력해줘!");
+        localStorage.setItem('studentName', name);
+        currentUser = name;
+        document.getElementById('login-overlay').style.display = 'none';
+        initApp();
+    }
+
+    function initApp() {
+        document.getElementById('welcome-msg').innerText = `🌈 ${currentUser}, 오늘의 기분은?`;
         updateDate();
         loadData();
-    });
+    }
 
     function updateDate() {
         const now = new Date();
-        const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
-        document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', options);
+        document.getElementById('today-date').innerText = now.toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' });
+    }
+
+    async function sendMood(mood) {
+        const today = new Date().toLocaleDateString();
+        const lastDate = localStorage.getItem('lastMoodDate');
+
+        if (lastDate === today) {
+            return alert("기분은 하루에 한 번만 기록할 수 있어! 내일 또 들려줘 😊");
+        }
+
+        alert(currentUser + "야, 기록 중이야. 잠시만 기다려줘!");
+        
+        try {
+            await fetch(API_URL, {
+                method: "POST",
+                body: JSON.stringify({ type: "mood", name: currentUser, mood: mood })
+            });
+            localStorage.setItem('lastMoodDate', today);
+            alert("✅ 오늘 기분 기록 완료! 시트에 저장됐어.");
+        } catch (e) {
+            alert("❌ 전송 실패! 나중에 다시 시도해줘.");
+        }
     }
 
     function showTab(tabName) {
@@ -93,93 +123,36 @@
         document.getElementById('tab-myroom').style.display = (tabName === 'myroom') ? 'block' : 'none';
         document.getElementById('nav-home').classList.toggle('active', tabName === 'home');
         document.getElementById('nav-myroom').classList.toggle('active', tabName === 'myroom');
-        if(tabName === 'myroom') {
-            document.getElementById('student-grid').style.display = 'grid';
-            document.getElementById('room-detail').style.display = 'none';
-        }
+        if(tabName === 'myroom') renderMyRoom();
     }
 
+    let allStudents = [];
     async function loadData() {
-        const grid = document.getElementById('student-grid');
         try {
-            // 주소에 오타가 있는지, 혹은 뒤에 공백이 있는지 꼭 확인해주세요!
             const response = await fetch(API_URL);
-            if (!response.ok) throw new Error('네트워크 응답이 좋지 않습니다.');
-            
             const result = await response.json();
-            if (!result || !result.students) throw new Error('데이터 형식이 잘못되었습니다.');
-            
             allStudents = result.students;
-            renderGrid();
-        } catch (e) {
-            console.error("에러 상세 정보:", e);
-            grid.innerHTML = `<div style="background:white; padding:15px; border-radius:15px;">
-                ❌ 데이터 연결 실패!<br><small style="color:red;">${e.message}</small><br>
-                <button onclick="loadData()" style="margin-top:10px;">다시 시도</button>
-            </div>`;
+        } catch (e) { console.error("데이터 로드 실패"); }
+    }
+
+    function renderMyRoom() {
+        const s = allStudents.find(item => item.name === currentUser);
+        const container = document.getElementById('my-room-content');
+        if (!s) {
+            container.innerHTML = `<div class="my-room-card">데이터에 ${currentUser} 이름이 없어 ㅠㅠ</div>`;
+            return;
         }
-    }
-
-    function renderGrid() {
-        const grid = document.getElementById('student-grid');
-        grid.innerHTML = allStudents.map((s, index) => `
-            <div class="student-card" onclick="enterMyRoom(${s.id})">
-                <h2>${fruits[index % fruits.length]} ${s.name}</h2>
-                <p><b>LV.${s.lv}</b> | ${s.point}P</p>
-            </div>
-        `).join('');
-    }
-
-    function selectMood(mood) { alert("오늘의 기분이 '" + mood + "'(으)로 기록되었습니다!"); }
-
-    function enterMyRoom(studentId) {
-        const s = allStudents.find(item => item.id == studentId);
-        if(!s) return;
-        document.getElementById('student-grid').style.display = 'none';
-        const detail = document.getElementById('room-detail');
-        detail.style.display = 'block';
-        detail.innerHTML = `
+        container.innerHTML = `
             <div class="my-room-card">
-                <h2 style="color: #ff8f00;">🏠 ${s.name}의 룸</h2>
+                <h2>🏠 ${s.name}의 룸</h2>
                 <div class="info-box">
-                    <p>⭐ <b>현재 레벨:</b> LV.${s.lv}</p>
-                    <p>💰 <b>보유 포인트:</b> ${s.point}P</p>
-                    <p>🏃 <b>최근 활동:</b> ${s.lastAction || '기록 없음'}</p>
-                    <p>🎮 <b>마크 좌표:</b> <span style="color: #2e7d32;">${s.mcCoords || '좌표 미정'}</span></p>
+                    <p>⭐ <b>레벨:</b> LV.${s.lv}</p>
+                    <p>💰 <b>포인트:</b> ${s.point}P</p>
+                    <p>🎮 <b>마크 좌표:</b> ${s.mcCoords || '미정'}</p>
                 </div>
-                <div class="btn-group">
-                    <input type="file" id="fileInput" style="display:none;" accept="image/*" onchange="uploadFile('${s.name}')">
-                    <button style="background: #ffca28;" onclick="document.getElementById('fileInput').click()">🎁 과제 제출</button>
-                    <button style="background: #4fc3f7;" onclick="alert('작품함 준비 중!')">🖼️ 내 작품함</button>
-                </div>
-                <button onclick="document.getElementById('student-grid').style.display='grid'; document.getElementById('room-detail').style.display='none';" 
-                        style="margin-top: 20px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">
-                    ← 목록으로 돌아가기
-                </button>
+                <button onclick="alert('과제 제출 준비 중!')" style="background:#ffca28; border:none; padding:15px; border-radius:15px; color:white; font-weight:bold; cursor:pointer; width:100%;">🎁 과제 제출하기</button>
             </div>
         `;
-    }
-
-    async function uploadFile(studentName) {
-        const fileInput = document.getElementById('fileInput');
-        const file = fileInput.files[0];
-        if (!file) return;
-        alert(studentName + " 어린이, 사진을 보내고 있어요!");
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = async () => {
-            const base64 = reader.result.split(',')[1];
-            const payload = {
-                base64: base64, mimeType: file.type,
-                fileName: studentName + "_" + new Date().getTime() + "_" + file.name,
-                studentName: studentName
-            };
-            try {
-                const response = await fetch(API_URL, { method: "POST", body: JSON.stringify(payload) });
-                const result = await response.text();
-                alert("✅ 성공: " + result);
-            } catch (e) { alert("❌ 전송 실패!"); }
-        };
     }
 </script>
 </body>
