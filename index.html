@@ -130,11 +130,10 @@ export default function App() {
   const me = allStudents.find(s => s.name === currentUser);
 
   return (
-    <div className="flex flex-col items-center min-h-screen font-['Pretendard']">
-      <div className="container w-full max-w-[500px] text-center p-5 pb-[100px]">
-        <h1 className="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_rgba(255,255,255,1)]">
-          🐰 도산 6-1 Happy &gt;.&lt;
-        </h1>
+    <div className="w-full max-w-[500px] text-center p-5 pb-[100px] animate-fade-in">
+      <h1 className="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_rgba(255,255,255,1)]">
+        🐰 도산 6-1 Happy &gt;.&lt;
+      </h1>
 
         <AnimatePresence mode="wait">
           {activeTab === 'home' && (
@@ -289,10 +288,9 @@ export default function App() {
         <p className="text-[0.7rem] text-[#888] mt-[30px] leading-[1.4] px-5">
           본 플랫폼에 사용된 시각 자료는 스튜디오 지브리(Studio Ghibli)에서 공식적으로 허용한 '상식적인 범위 내의 교육적 활용' 가이드라인을 준수하며, 출처를 명확히 표기함.
         </p>
-      </div>
 
       {/* 하단 네비게이션 바 */}
-      <div className="fixed bottom-0 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
+      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000]">
         <button 
           className={`cursor-pointer text-center flex-1 font-bold text-[0.8rem] flex flex-col items-center gap-1 ${activeTab === 'home' ? 'text-[#fbc02d]' : 'text-[#bbb]'}`}
           onClick={() => { setActiveTab('home'); setSelectedFriend(null); }}
