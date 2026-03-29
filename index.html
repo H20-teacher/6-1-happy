@@ -8,33 +8,37 @@
     <style>
         body {
             margin: 0; padding: 20px;
-            background-color: #fffde7; /* 연한 노란색 배경 */
+            /* 배경 이미지 설정: ID를 넣고 투명도를 조절했습니다. */
+            background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), 
+                        url('https://drive.google.com/uc?id=https://14bqoIAnz5AN3W4TSgvjGIUKI24HlZgl3') no-repeat center center fixed;
+            background-size: cover;
             font-family: 'Pretendard', sans-serif;
             display: flex; justify-content: center;
+            min-height: 100vh;
         }
         .container {
             width: 100%; max-width: 500px; text-align: center;
         }
-        h1 { color: #fbc02d; margin-bottom: 30px; }
+        /* 제목이 배경에서도 잘 보이도록 그림자를 넣었습니다. */
+        h1 { color: #fbc02d; margin-bottom: 30px; text-shadow: 1px 1px 2px white; }
         
-        /* 학생 카드 디자인 */
         #student-grid {
             display: grid; grid-template-columns: 1fr 1fr; gap: 15px;
         }
         .student-card {
             border: 2px solid #ffca28; padding: 20px; 
             border-radius: 20px; cursor: pointer; 
-            background: white; transition: 0.3s;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            background: rgba(255, 255, 255, 0.9); /* 카드를 약간 투명하게 하여 배경과 어우러지게 함 */
+            transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-        .student-card:hover { transform: translateY(-5px); border-color: #fbc02d; }
+        .student-card:hover { transform: translateY(-5px); background: white; }
         .student-card h2 { margin: 0; font-size: 1.2rem; color: #ff8f00; }
         .student-card p { margin: 5px 0 0; color: #777; font-size: 0.9rem; }
 
-        /* 마이룸 카드 디자인 */
         .my-room-card {
             background: white; padding: 30px; border-radius: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
         }
         .info-box {
             background: #fff9c4; padding: 20px; border-radius: 20px;
@@ -48,15 +52,13 @@
     </style>
 </head>
 <body>
-
     <div id="app-content" class="container">
         <h1>🌻 6-1 Happy 숲</h1>
-        <div id="student-grid">데이터를 불러오는 중입니다...</div>
+        <div id="student-grid">데이터를 불러오는 중...</div>
     </div>
 
 <script>
-    // 선생님이 배포하신 실제 API 주소입니다.
-    const API_URL = "https://script.google.com/macros/s/AKfycbwLNJxDMLShsSXledULvzl7lQ8uK98yy70gMgR5wB1CZdnqMaePCPh91iGpWS_l8U0w/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbygZZ-J-SmJwuYmZFLXlhWzrV_jTBiqWhq0kzSjhgvq_dcVdxRKs9DXE0LWRDaSIX-5/exec";
     let allStudents = []; 
 
     async function loadData() {
@@ -64,8 +66,6 @@
         try {
             const response = await fetch(API_URL);
             const result = await response.json();
-            
-            // GAS 구조에 맞춰 students 배열을 가져옵니다.
             allStudents = result.students; 
 
             grid.innerHTML = allStudents.map(s => `
@@ -75,36 +75,31 @@
                 </div>
             `).join('');
         } catch (e) {
-            grid.innerHTML = "❌ 연결 실패: " + e.message + "<br>GAS 배포 설정을 확인해주세요.";
+            grid.innerHTML = "<div style='background:white; padding:20px; border-radius:20px;'>❌ 연결 실패: " + e.message + "</div>";
         }
     }
 
     function enterMyRoom(studentId) {
         const s = allStudents.find(item => item.id == studentId);
         const content = document.getElementById('app-content');
-
         content.innerHTML = `
             <div class="my-room-card">
-                <h1 style="color: #ff8f00; margin-bottom: 5px;">🏠 ${s.name}의 Happy 룸</h1>
+                <h1 style="color: #ff8f00; margin-bottom: 5px; text-shadow:none;">🏠 ${s.name}의 Happy 룸</h1>
                 <p style="color: #888; margin-bottom: 25px;">우리들의 행복한 성장 기록</p>
-                
                 <div class="info-box">
                     <p>⭐ <b>현재 레벨:</b> LV.${s.lv}</p>
                     <p>💰 <b>보유 포인트:</b> ${s.point}P</p>
                     <p>🏃 <b>최근 활동:</b> ${s.lastAction || '기록 없음'}</p>
                     <p>🎮 <b>마크 좌표:</b> <span style="color: #2e7d32;">${s.mcCoords || '좌표 미정'}</span></p>
                 </div>
-
                 <div class="btn-group">
-                    <button style="background: #ffca28;" onclick="alert('과제 제출 기능은 다음 단계에서 연결합니다!')">🎁 과제 제출</button>
-                    <button style="background: #4fc3f7;" onclick="alert('작품함 기능은 다음 단계에서 연결합니다!')">🖼️ 내 작품함</button>
+                    <button style="background: #ffca28;" onclick="alert('과제 제출 준비 중!')">🎁 과제 제출</button>
+                    <button style="background: #4fc3f7;" onclick="alert('작품함 준비 중!')">🖼️ 내 작품함</button>
                 </div>
-
                 <button onclick="location.reload()" style="margin-top: 25px; background: none; border: none; color: #888; text-decoration: underline; cursor: pointer;">← 숲으로 돌아가기</button>
             </div>
         `;
     }
-
     window.onload = loadData;
 </script>
 </body>
