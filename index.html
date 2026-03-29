@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🐰 도산 6-1 Happy >.<</title>
     
-    <!-- Tailwind CSS & Lucide Icons -->
+    <!-- 필수 라이브러리 로드 -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
 
@@ -27,10 +27,9 @@
         .active-tab { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        /* 로그인 화면 스타일 */
         #login-screen {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
             z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center;
             padding: 20px; text-align: center;
         }
@@ -38,24 +37,25 @@
 </head>
 <body>
 
-    <!-- 로그인 화면 -->
     <div id="login-screen">
         <h1 class="text-[#fbc02d] text-3xl font-bold mb-8">🐰 도산 6-1 Happy</h1>
-        <div class="bg-white p-8 rounded-[30px] card-shadow w-full max-w-[350px]">
-            <p class="text-gray-600 mb-4 font-bold">이름을 입력하고 입장하세요!</p>
-            <input type="text" id="login-name" class="w-full p-4 border-2 border-[#ffca28] rounded-xl mb-4 text-center text-lg font-bold outline-none" placeholder="이름 입력">
-            <button onclick="handleLogin()" class="w-full p-4 bg-[#ffca28] text-white font-bold rounded-xl hover:bg-[#fbc02d] transition-colors">입장하기</button>
-            <p id="login-error" class="text-red-500 mt-4 text-sm font-bold hidden">명단에 없는 이름입니다!</p>
+        <div id="login-box" class="bg-white p-8 rounded-[30px] card-shadow w-full max-w-[350px]">
+            <div id="loading-status" class="mb-4 text-blue-500 font-bold animate-pulse">📡 서버에서 명단을 불러오는 중...</div>
+            
+            <div id="login-controls" class="hidden">
+                <p class="text-gray-600 mb-4 font-bold">이름을 입력하고 입장하세요!</p>
+                <input type="text" id="login-name" class="w-full p-4 border-2 border-[#ffca28] rounded-xl mb-4 text-center text-lg font-bold outline-none" placeholder="이름 입력">
+                <button onclick="handleLogin()" class="w-full p-4 bg-[#ffca28] text-white font-bold rounded-xl hover:bg-[#fbc02d] transition-colors">입장하기</button>
+                <p id="login-error" class="text-red-500 mt-4 text-sm font-bold hidden">명단에 없는 이름입니다!</p>
+            </div>
         </div>
     </div>
 
-    <!-- 메인 앱 컨텐츠 -->
     <div id="main-app" class="w-full max-w-[500px] text-center p-5 pb-[100px] hidden">
         <h1 class="text-[#fbc02d] text-[1.8rem] mt-5 mb-6 font-bold drop-shadow-[1px_1px_2px_white]">
             🐰 도산 6-1 Happy &gt;.&lt;
         </h1>
 
-        <!-- 홈 탭 -->
         <div id="tab-home" class="tab-content active-tab">
             <div id="today-date" class="font-bold mb-4">날짜 불러오는 중...</div>
             <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
@@ -76,7 +76,6 @@
             </div>
         </div>
 
-        <!-- 나의 방 탭 -->
         <div id="tab-myroom" class="tab-content">
             <div class="bg-white/90 p-5 rounded-[25px] mb-5 card-shadow">
                 <h2 id="my-room-title" class="text-[#ff8f00] text-xl font-bold mb-4">🏠 나의 마이룸</h2>
@@ -88,7 +87,6 @@
             </div>
         </div>
 
-        <!-- 친구들 탭 -->
         <div id="tab-explore" class="tab-content">
             <div id="explore-list">
                 <p class="font-bold mb-4">🌳 우리 반 친구들 둘러보기</p>
@@ -110,7 +108,6 @@
         </p>
     </div>
 
-    <!-- 하단 네비게이션 -->
     <div id="nav-bar" class="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[500px] bg-white flex justify-around py-3 border-t-2 border-[#fbc02d] z-[1000] hidden">
         <button id="nav-home" class="flex-1 flex flex-col items-center gap-1 font-bold text-xs text-[#fbc02d]" onclick="showTab('home')">
             <i data-lucide="home"></i><span>홈</span>
@@ -124,10 +121,9 @@
     </div>
 
     <script>
-        // [확인] 선생님의 구글 앱스 스크립트 API 주소를 꼭 넣어주세요!
+        // 선생님의 실제 API 주소 적용
         const API_URL = "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec";
         
-        // sessionStorage를 사용하여 창을 닫으면 로그아웃되게 함
         let currentUser = sessionStorage.getItem('studentName'); 
         let allStudents = [];
         let lessons = [];
@@ -135,7 +131,6 @@
         window.onload = () => {
             updateDate();
             loadData();
-            lucide.createIcons();
         };
 
         function updateDate() {
@@ -144,29 +139,40 @@
         }
 
         async function loadData() {
+            const status = document.getElementById('loading-status');
             try {
-                if (API_URL === "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec") {
-                    allStudents = [
-                        { name: "미호", lv: 5, point: 1200, mcCoords: "100, 64, -200" },
-                        { name: "준호", lv: 3, point: 800, mcCoords: "50, 70, 150" },
-                        { name: "서연", lv: 7, point: 2500, mcCoords: "-300, 65, 400" }
-                    ];
-                    lessons = [{ date: new Date().toISOString().split('T')[0], content: "오늘은 분수의 덧셈을 배워봅시다.", link: "https://www.youtube.com" }];
-                } else {
-                    const response = await fetch(API_URL);
-                    const result = await response.json();
-                    allStudents = result.students || [];
-                    lessons = result.lessons || [];
+                // [수정됨] 주소가 설정되었는지 확인하는 로직 정상화
+                if (API_URL.includes("YOUR_GOOGLE")) {
+                    status.innerHTML = `<span class="text-red-500">❌ API 주소가 설정되지 않았습니다!</span>`;
+                    return;
                 }
                 
-                // 이미 로그인 정보가 있다면 바로 앱 보여주기
-                if (currentUser && allStudents.some(s => s.name === currentUser)) {
-                    showApp();
+                const response = await fetch(API_URL);
+                const result = await response.json();
+                
+                if (result.error) {
+                    status.innerHTML = `<span class="text-red-500">❌ 오류: ${result.error}</span>`;
+                    return;
                 }
-            } catch (e) { console.error(e); }
+
+                allStudents = result.students || [];
+                lessons = result.lessons || [];
+
+                if (allStudents.length === 0) {
+                    status.innerHTML = `<span class="text-red-500">⚠️ 명단이 비어있습니다. Main_DB 시트를 확인하세요!</span>`;
+                } else {
+                    status.classList.add('hidden');
+                    document.getElementById('login-controls').classList.remove('hidden');
+                    if (currentUser && allStudents.some(s => s.name === currentUser)) {
+                        showApp();
+                    }
+                }
+            } catch (e) {
+                status.innerHTML = `<span class="text-red-500">❌ 서버 연결 실패!<br>주소나 권한 설정을 확인하세요.</span>`;
+                console.error(e);
+            }
         }
 
-        // 로그인 처리
         function handleLogin() {
             const inputName = document.getElementById('login-name').value.trim();
             const student = allStudents.find(s => s.name === inputName);
@@ -185,10 +191,10 @@
             document.getElementById('main-app').classList.remove('hidden');
             document.getElementById('nav-bar').classList.remove('hidden');
             renderAll();
+            lucide.createIcons();
         }
 
         function renderAll() {
-            // 학습 문제
             const today = new Date().toISOString().split('T')[0];
             const lesson = lessons.find(l => l.date === today);
             const lessonDiv = document.getElementById('lesson-content');
@@ -201,17 +207,19 @@
                 lessonDiv.innerHTML = `<p class="text-gray-500 italic">오늘은 등록된 학습 문제가 없습니다.</p>`;
             }
 
-            // 나의 방
             const me = allStudents.find(s => s.name === currentUser);
             if (me) {
                 document.getElementById('my-room-title').innerText = `🏠 ${me.name}의 마이룸`;
-                document.getElementById('my-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${me.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${me.point}P</p><p>🎮 <b>마크 좌표:</b> ${me.mcCoords || '미정'}</p>`;
+                document.getElementById('my-stats').innerHTML = `
+                    <p class="mb-2">⭐ <b>레벨:</b> LV.${me.lv}</p>
+                    <p class="mb-2">💰 <b>포인트:</b> ${me.point}P</p>
+                    <p>🎮 <b>마크 좌표:</b> ${me.mcCoords || '미정'}</p>
+                `;
             }
 
-            // 친구들 목록 (나 제외)
             const grid = document.getElementById('friends-grid');
             grid.innerHTML = allStudents.filter(s => s.name !== currentUser).map(s => `
-                <div class="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer" onclick="viewFriend('${s.name}')">
+                <div class="bg-white border-2 border-[#ffca28] p-4 rounded-2xl cursor-pointer transition-transform hover:scale-[1.02]" onclick="viewFriend('${s.name}')">
                     <div class="text-2xl">🌳</div>
                     <div class="font-bold mt-1">${s.name}</div>
                     <div class="text-sm text-gray-400">LV.${s.lv}</div>
@@ -224,10 +232,11 @@
         function showTab(tabName) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active-tab'));
             document.getElementById('tab-' + tabName).classList.add('active-tab');
-            
-            document.querySelectorAll('#nav-bar button').forEach(b => b.classList.replace('text-[#fbc02d]', 'text-gray-400'));
+            document.querySelectorAll('#nav-bar button').forEach(b => {
+                b.classList.remove('text-[#fbc02d]');
+                b.classList.add('text-gray-400');
+            });
             document.getElementById('nav-' + tabName).classList.replace('text-gray-400', 'text-[#fbc02d]');
-            
             if(tabName === 'explore') closeFriendRoom();
         }
 
@@ -236,7 +245,13 @@
             document.getElementById('explore-list').classList.add('hidden');
             document.getElementById('friend-detail').classList.remove('hidden');
             document.getElementById('friend-name').innerText = `🏠 ${friend.name}의 공간`;
-            document.getElementById('friend-stats').innerHTML = `<p class="mb-2">⭐ <b>레벨:</b> LV.${friend.lv}</p><p class="mb-2">💰 <b>포인트:</b> ${friend.point}P</p><p>🎮 <b>마크 좌표:</b> ${friend.mcCoords || '미정'}</p>`;
+            document.getElementById('friend-stats').innerHTML = `
+                <p class="mb-2">⭐ <b>레벨:</b> LV.${friend.lv}</p>
+                <p class="mb-2">💰 <b>포인트:</b> ${friend.point}P</p>
+                <p>🎮 <b>마크 좌표:</b> ${friend.mcCoords || '미정'}</p>
+                <p class="text-[0.8rem] text-gray-500 text-center mt-5">(친구의 방은 구경만 가능해요!)</p>
+            `;
+            lucide.createIcons();
         }
 
         function closeFriendRoom() {
@@ -248,11 +263,14 @@
             const today = new Date().toLocaleDateString();
             if (localStorage.getItem('done_' + currentUser) === today) return alert("이미 오늘 기분을 기록했어!");
             try {
-                if (API_URL !== "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec") {
-                    await fetch(API_URL, { method: "POST", body: JSON.stringify({ type: "mood", name: currentUser, mood }) });
-                }
+                // [수정됨] 테스트 모드 판정 로직 정상화
+                if (API_URL.includes("YOUR_GOOGLE")) return alert("테스트 모드입니다.");
+                await fetch(API_URL, { 
+                    method: "POST", 
+                    body: JSON.stringify({ type: "mood", name: currentUser, mood: mood }) 
+                });
                 localStorage.setItem('done_' + currentUser, today);
-                alert(`✅ 기분 저장 완료!`);
+                alert(`✅ ${currentUser}의 기분 저장 완료!`);
             } catch (e) { alert("저장 실패"); }
         }
 
@@ -264,9 +282,16 @@
             reader.onload = async () => {
                 const base64 = reader.result.split(',')[1];
                 try {
-                    if (API_URL !== "https://script.google.com/macros/s/AKfycbxl4eHl5M5jUx7sPyDWg6PogXFkqv7Z8MoYteBKcJPy20MlsY6xZoK5J1iAWZelVBYX/exec") {
-                        await fetch(API_URL, { method: "POST", body: JSON.stringify({ base64, mimeType: file.type, fileName: currentUser + "_" + file.name }) });
-                    }
+                    // [수정됨] 테스트 모드 판정 로직 정상화
+                    if (API_URL.includes("YOUR_GOOGLE")) return alert("테스트 모드입니다.");
+                    await fetch(API_URL, { 
+                        method: "POST", 
+                        body: JSON.stringify({ 
+                            base64: base64, 
+                            mimeType: file.type, 
+                            fileName: currentUser + "_" + file.name 
+                        }) 
+                    });
                     alert("✅ 과제 제출 성공!");
                 } catch (e) { alert("제출 실패"); }
             };
