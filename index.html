@@ -7,13 +7,15 @@
     <title>6-1 Happy</title>
     <style>
        body {
-    margin: 0; padding: 20px;
-    /* 배경 이미지 설정: 아래 주소 형식을 사용해 보세요 */
-    background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0.5)), 
-                url('https://lh3.googleusercontent.com/u/0/d/14bqoIAnz5AN3W4TSgvjGIUKI24HlZgl3') no-repeat center center fixed;
-    background-size: cover;
+    margin: 0; 
+    padding: 20px;
+    /* 배경 설정: 주소 뒤에 !important를 붙여서 강제 적용합니다. */
+    background: linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), 
+                url('https://drive.google.com/uc?id=14bqoIAnz5AN3W4TSgvjGIUKI24HlZgl3') no-repeat center center fixed !important;
+    background-size: cover !important;
     font-family: 'Pretendard', sans-serif;
-    display: flex; justify-content: center;
+    display: flex; 
+    justify-content: center;
     min-height: 100vh;
 }
         .container {
@@ -143,6 +145,14 @@ async function uploadFile(studentName) {
         }
     };
 }
+    // 페이지 로드 시 배경화면을 강제로 다시 설정합니다.
+document.addEventListener("DOMContentLoaded", function() {
+    // uc?id= 대신에 드라이브 파일의 섬네일 엔진 주소를 사용합니다.
+    const bgUrl = "https://lh3.googleusercontent.com/d/14bqoIAnz5AN3W4TSgvjGIUKI24HlZgl3";
+    document.body.style.backgroundImage = `linear-gradient(rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.4)), url('${bgUrl}')`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundAttachment = "fixed";
+});
     window.onload = loadData;
 </script>
 </body>
