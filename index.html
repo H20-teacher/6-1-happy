@@ -130,24 +130,36 @@
             } catch (e) { console.error("로드 실패", e); }
         }
 
-        function handleLogin() {
-            const inputField = document.getElementById('login-name');
-            const inputName = inputField.value.trim();
-            if (!inputName) return alert("이름을 입력해 주세요!");
+function handleLogin() {
+    const inputField = document.getElementById('login-name');
+    // 1. 입력값에서 앞뒤 공백 제거 및 한글 정규화
+    const inputName = inputField.value.trim().normalize("NFC").replace(/\s/g, "");
+    
+    if (!inputName) {
+        alert("이름을 입력해 주세요!");
+        return;
+    }
 
-            const cleanInput = inputName.normalize("NFC").replace(/\s/g, "");
-            const student = allStudents.find(s => s.name.toString().normalize("NFC").replace(/\s/g, "") === cleanInput);
+    // 2. 명단 데이터와 대조 (데이터 타입에 상관없이 문자열로 변환 후 비교)
+    const student = allStudents.find(s => {
+        if (!s || !s.name) return false;
+        // 시트의 이름 데이터도 문자열화 + 정규화 + 공백제거
+        const sheetName = s.name.toString().trim().normalize("NFC").replace(/\s/g, "");
+        return sheetName === inputName;
+    });
 
-            if (student) {
-                currentUser = student.name;
-                sessionStorage.setItem('studentName', currentUser);
-                showApp();
-            } else {
-                document.getElementById('login-error').classList.remove('hidden');
-                setTimeout(() => document.getElementById('login-error').classList.add('hidden'), 3000);
-            }
-        }
-
+    if (student) {
+        // 매칭 성공 시 실제 시트에 적힌 이름 그대로 저장
+        currentUser = student.name.toString();
+        sessionStorage.setItem('studentName', currentUser);
+        showApp();
+    } else {
+        // 실패 시 에러 메시지 표시
+        document.getElementById('login-error').classList.remove('hidden');
+        console.log("입력한 이름:", inputName); // 진단용: 콘솔에 찍어보기
+        setTimeout(() => document.getElementById('login-error').classList.add('hidden'), 3000);
+    }
+}
         function showApp() {
             document.getElementById('login-screen').classList.add('hidden');
             document.getElementById('main-app').classList.remove('hidden');
