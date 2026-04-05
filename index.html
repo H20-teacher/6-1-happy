@@ -226,10 +226,12 @@ function handleLogin() {
             document.getElementById('friend-detail').classList.add('hidden');
         }
 
-        function checkNames() {
-            if (allStudents.length === 0) return alert("데이터를 불러오는 중입니다. 잠시만 기다려주세요!");
-            alert("등록된 명단:\n" + allStudents.map(s => s.name).join(", "));
-        }
+ function checkNames() {
+    if (allStudents.length === 0) return alert("데이터가 없습니다.");
+    // 데이터의 구조를 직접 확인 (콘솔 창도 함께 보세요)
+    console.log("전체 학생 데이터:", allStudents);
+    alert("첫 번째 학생 데이터 예시: " + JSON.stringify(allStudents[0]));
+}
 
         async function sendMood(mood) {
             const today = new Date().toLocaleDateString();
